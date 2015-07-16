@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">CadeOPenha</string>
+
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
+
+    <string name="token">6a4538e3586f5f74b631aa8a05629684c8e55b512387d3b8cb8da02c526dafd9</string>
+</resources>
