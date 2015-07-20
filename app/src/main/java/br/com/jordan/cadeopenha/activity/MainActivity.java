@@ -43,13 +43,11 @@ import br.com.jordan.cadeopenha.util.GPSTracker;
 import br.com.jordan.cadeopenha.util.GoogleDirection;
 
 
-public class MainActivity extends Activity implements OnMapReadyCallback, AsyncTaskListenerBuscarPenhas, AsyncTaskListenerGetWaypoints, GoogleMap.OnMarkerClickListener, GoogleMap.OnMapLongClickListener, GoogleMap.OnMyLocationChangeListener{
+public class MainActivity extends Activity implements OnMapReadyCallback, AsyncTaskListenerBuscarPenhas, AsyncTaskListenerGetWaypoints, GoogleMap.OnMarkerClickListener, GoogleMap.OnMyLocationChangeListener{
 
     private GoogleMap map;
-    private Button btnAtualizar;
 
     private GoogleDirection gd;
-    private Document mDoc;
     private GPSTracker gps;
 
     private MapFragment mapFragment;
@@ -70,8 +68,6 @@ public class MainActivity extends Activity implements OnMapReadyCallback, AsyncT
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        btnAtualizar = (Button) findViewById(R.id.btn_atualizar);
-
         mapFragment = (MapFragment) getFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
         mapFragment.getView().setVisibility(View.VISIBLE);
@@ -80,7 +76,6 @@ public class MainActivity extends Activity implements OnMapReadyCallback, AsyncT
         gd = new GoogleDirection(this);
         gd.setOnDirectionResponseListener(new GoogleDirection.OnDirectionResponseListener() {
             public void onResponse(String status, Document doc, GoogleDirection gd) {
-                mDoc = doc;
                 map.addPolyline(gd.getPolyline(doc, 3, Color.BLUE));
                 map.addMarker(new MarkerOptions().position(latLngOrigem)
                         .icon(BitmapDescriptorFactory.defaultMarker(
@@ -104,7 +99,6 @@ public class MainActivity extends Activity implements OnMapReadyCallback, AsyncT
     @Override
     public void onMapReady(GoogleMap googleMap) {
         map = googleMap;
-        //map.setMapType(GoogleMap.MAP_TYPE_TERRAIN);
         map.getUiSettings().setZoomControlsEnabled(true);
         map.setOnMyLocationChangeListener(this);
 
@@ -126,7 +120,7 @@ public class MainActivity extends Activity implements OnMapReadyCallback, AsyncT
         }
     }
 
-    private void markerPenhasOnMap(Penhas penhas, float penhaMaisProximo){
+    private void markerPenhasOnMap(Penhas penhas){
         for (Penha penha : penhas.getListPenha()) {
 
             optionsm = new MarkerOptions();
@@ -135,11 +129,9 @@ public class MainActivity extends Activity implements OnMapReadyCallback, AsyncT
 
             optionsm.position(latLng).title("Penha " + penha.getNumero()).snippet(getString(R.string.description_penha))
                     .icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_penha))
-                    //.icon(BitmapDescriptorFactory.defaultMarker())
                     .draggable(false);
 
             markersPenha.add(map.addMarker(optionsm));
-
         }
     }
 
@@ -150,11 +142,6 @@ public class MainActivity extends Activity implements OnMapReadyCallback, AsyncT
         CameraUpdate update = CameraUpdateFactory.newCameraPosition(cameraPos);
         map.animateCamera(update);
         return true;
-    }
-
-    @Override
-    public void onMapLongClick(LatLng latLng) {
-
     }
 
 
@@ -177,6 +164,8 @@ public class MainActivity extends Activity implements OnMapReadyCallback, AsyncT
             if(penhaMaisProximo > 0){
                 Locale locale = new Locale("pt","BR");
                 MessageFormat formatter = new MessageFormat("");
+                formatter.setLocale(locale);
+
                 if(penhaMaisProximo < 1000) {
                     optionsm.snippet(formatter.format("O Penha mais próximo está a {0} metros de você", String.valueOf(penhaMaisProximo)));
                 }else{
@@ -186,7 +175,7 @@ public class MainActivity extends Activity implements OnMapReadyCallback, AsyncT
 
             markerLocale = map.addMarker(optionsm);
 
-            markerPenhasOnMap(penhasLocalizados, penhaMaisProximo);
+            markerPenhasOnMap(penhasLocalizados);
 
         }else{
             Toast.makeText(this, "Nenhum penha encontrado :(", Toast.LENGTH_LONG).show();
