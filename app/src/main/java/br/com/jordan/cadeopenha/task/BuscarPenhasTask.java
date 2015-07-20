@@ -4,7 +4,6 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.os.AsyncTask;
 
-import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -23,14 +22,13 @@ import br.com.jordan.cadeopenha.R;
 import br.com.jordan.cadeopenha.interfaces.AsyncTaskListenerBuscarPenhas;
 import br.com.jordan.cadeopenha.model.Penhas;
 
-public class BuscarPenhasTask extends AsyncTask<String, Void, Penhas> {
+public class BuscarPenhasTask extends AsyncTask<LatLng, Void, Penhas> {
 
     private static final String URL_Auth = "http://api.olhovivo.sptrans.com.br/v0/Login/Autenticar?token=";
     private static final String URL_SearchPenhas = "http://api.olhovivo.sptrans.com.br/v0/Posicao?codigoLinha=";
 
     private String responseStr;
     private ProgressDialog progress;
-    private GoogleMap map;
 
     private AsyncTaskListenerBuscarPenhas callback;
     private Context context;
@@ -53,7 +51,7 @@ public class BuscarPenhasTask extends AsyncTask<String, Void, Penhas> {
     }
 
     @Override
-    protected Penhas doInBackground(String... params) {
+    protected Penhas doInBackground(LatLng... params) {
         try {
             HttpClient http = new DefaultHttpClient();
 
@@ -62,7 +60,7 @@ public class BuscarPenhasTask extends AsyncTask<String, Void, Penhas> {
             responseStr = EntityUtils.toString(responseAuth.getEntity());
 
             if(responseStr.equals("true")){
-                HttpGet get = new HttpGet(URL_SearchPenhas + context.getString(R.string.codePenha));
+                HttpGet get = new HttpGet(URL_SearchPenhas + 32846);
                 HttpResponse responsePenhas = http.execute(get);
                 responseStr = EntityUtils.toString(responsePenhas.getEntity());
 
@@ -86,7 +84,9 @@ public class BuscarPenhasTask extends AsyncTask<String, Void, Penhas> {
 
             callback.onTaskCompleteAutenticarAPI(penhas);
         } catch (final IllegalArgumentException e) {
+            e.printStackTrace();
         } catch (final Exception e) {
+            e.printStackTrace();
         } finally {
             this.progress = null;
         }

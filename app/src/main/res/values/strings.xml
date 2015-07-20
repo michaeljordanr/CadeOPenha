@@ -10,4 +10,12 @@
     <string name="auth_success">Autenticado com sucesso</string>
     <string name="oh_wait">Aguarde, estamos procurando por PENHAS!</string>
     <string name="codePenha">33000</string>
+    <string name="description_penha">Destino: Penha\nLinha: 247P-10\n Modelo Padrão</string>
+    <string name="searchPenhaRote">Buscando rota do PENHA!</string>
+    <string name="you_are_here">Você está aqui!</string>
+
+    <string-array name="waypoints">
+        <item>Av. Lins De Vasconcelos, 3139</item>
+        <item>Pça. Erva De Passarinho, 0</item>
+    </string-array>
 </resources>
