@@ -6,6 +6,7 @@ import android.location.Location;
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.view.View;
+import android.widget.Button;
 import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -14,6 +15,7 @@ import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.LocationSource;
 import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
@@ -41,20 +43,23 @@ import br.com.jordan.cadeopenha.util.GPSTracker;
 import br.com.jordan.cadeopenha.util.GoogleDirection;
 
 
-public class MainActivity extends Activity implements OnMapReadyCallback, AsyncTaskListenerBuscarPenhas, AsyncTaskListenerGetWaypoints, GoogleMap.OnMarkerClickListener, GoogleMap.OnMapLongClickListener {
+public class MainActivity extends Activity implements OnMapReadyCallback, AsyncTaskListenerBuscarPenhas, AsyncTaskListenerGetWaypoints, GoogleMap.OnMarkerClickListener, GoogleMap.OnMapLongClickListener, GoogleMap.OnMyLocationChangeListener{
 
     private GoogleMap map;
-
+    private Button btnAtualizar;
 
     private GoogleDirection gd;
     private Document mDoc;
     private GPSTracker gps;
 
-    private ArrayList<String> nome = new ArrayList<>();
     private MapFragment mapFragment;
     private MarkerOptions optionsm;
+    private List<Marker> markersPenha = new ArrayList<>();
+    private Marker markerLocale;
+
 
     private Penhas penhasLocalizados = new Penhas();
+    private BuscarPenhasTask task;
 
     LatLng latLngDestino = new LatLng(-23.512102, -46.530783);
     LatLng latLngOrigem = new LatLng(-23.589442, -46.634740);
@@ -64,6 +69,8 @@ public class MainActivity extends Activity implements OnMapReadyCallback, AsyncT
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        btnAtualizar = (Button) findViewById(R.id.btn_atualizar);
 
         mapFragment = (MapFragment) getFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
@@ -89,7 +96,7 @@ public class MainActivity extends Activity implements OnMapReadyCallback, AsyncT
         GoogleAddressTask googleAddressTask = new GoogleAddressTask(this, this);
         googleAddressTask.execute(getResources().getStringArray(R.array.waypoints));
 
-        BuscarPenhasTask task = new BuscarPenhasTask(this, this);
+        task = new BuscarPenhasTask(this, this);
         task.execute();
 
     }
@@ -99,6 +106,8 @@ public class MainActivity extends Activity implements OnMapReadyCallback, AsyncT
         map = googleMap;
         //map.setMapType(GoogleMap.MAP_TYPE_TERRAIN);
         map.getUiSettings().setZoomControlsEnabled(true);
+        map.setOnMyLocationChangeListener(this);
+
 
         LatLng locationSP = new LatLng(-23.528918, -46.585642);
         CameraPosition cameraPos = new CameraPosition.Builder().target(locationSP).zoom(13).build();
@@ -129,7 +138,7 @@ public class MainActivity extends Activity implements OnMapReadyCallback, AsyncT
                     //.icon(BitmapDescriptorFactory.defaultMarker())
                     .draggable(false);
 
-            Marker m = map.addMarker(optionsm);
+            markersPenha.add(map.addMarker(optionsm));
 
         }
     }
@@ -169,13 +178,13 @@ public class MainActivity extends Activity implements OnMapReadyCallback, AsyncT
                 Locale locale = new Locale("pt","BR");
                 MessageFormat formatter = new MessageFormat("");
                 if(penhaMaisProximo < 1000) {
-                    optionsm.snippet(MessageFormat.format("O Penha mais próximo está a {0} metros de você", String.valueOf(penhaMaisProximo)));
+                    optionsm.snippet(formatter.format("O Penha mais próximo está a {0} metros de você", String.valueOf(penhaMaisProximo)));
                 }else{
-                    optionsm.snippet(MessageFormat.format("O Penha mais próximo está a {0} kilômetros de você", penhaMaisProximo));
+                    optionsm.snippet(formatter.format("O Penha mais próximo está a {0} kilômetros de você", penhaMaisProximo / 1000));
                 }
             }
 
-            map.addMarker(optionsm);
+            markerLocale = map.addMarker(optionsm);
 
             markerPenhasOnMap(penhasLocalizados, penhaMaisProximo);
 
@@ -208,5 +217,45 @@ public class MainActivity extends Activity implements OnMapReadyCallback, AsyncT
 
         Collections.sort(distancias);
         return distancias.get(0);
+    }
+
+    @Override
+    public void onMyLocationChange(Location location) {
+        gps = new GPSTracker(this);
+        if(gps.canGetLocation()) {
+            markerLocale.remove();
+            double latitude = gps.getLatitude();
+            double longitude = gps.getLongitude();
+
+            latLngCurrentLocation = new LatLng(latitude, longitude);
+
+            optionsm = new MarkerOptions();
+            optionsm.position(latLngCurrentLocation).title(getString(R.string.you_are_here))
+                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.rsz_cool))
+                    .draggable(false);
+
+        }else{
+            Toast.makeText(this, "GPS desligado", Toast.LENGTH_LONG).show();
+        }
+    }
+
+
+    public void refreshLocation(View view){
+        gps = new GPSTracker(this);
+        latLngCurrentLocation = new LatLng(gps.getLatitude(), gps.getLongitude());
+
+        CameraPosition cameraPos = new CameraPosition.Builder().target(latLngCurrentLocation).zoom(map.getCameraPosition().zoom).build();
+        CameraUpdate update = CameraUpdateFactory.newCameraPosition(cameraPos);
+        map.animateCamera(update);
+    }
+
+    public void refreshPenhaOnMap(View view){
+        for(Marker m : markersPenha){
+            m.remove();
+        }
+        markerLocale.remove();
+
+        task = new BuscarPenhasTask(this, this);
+        task.execute();
     }
 }
