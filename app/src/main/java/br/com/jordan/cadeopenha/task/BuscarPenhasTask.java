@@ -25,7 +25,7 @@ import br.com.jordan.cadeopenha.model.Penhas;
 public class BuscarPenhasTask extends AsyncTask<LatLng, Void, Penhas> {
 
     private static final String URL_Auth = "http://api.olhovivo.sptrans.com.br/v0/Login/Autenticar?token=";
-    private static final String URL_SearchPenhas = "http://api.olhovivo.sptrans.com.br/v0/Posicao?codigoLinha=";
+    private static final String URL_SearchPenhas = "http://api.olhovivo.sptrans.com.br/v0/Posicao?codigoLinha=33000";
 
     private String responseStr;
     private ProgressDialog progress;
@@ -60,7 +60,7 @@ public class BuscarPenhasTask extends AsyncTask<LatLng, Void, Penhas> {
             responseStr = EntityUtils.toString(responseAuth.getEntity());
 
             if(responseStr.equals("true")){
-                HttpGet get = new HttpGet(URL_SearchPenhas + 32846);
+                HttpGet get = new HttpGet(URL_SearchPenhas);
                 HttpResponse responsePenhas = http.execute(get);
                 responseStr = EntityUtils.toString(responsePenhas.getEntity());
 
