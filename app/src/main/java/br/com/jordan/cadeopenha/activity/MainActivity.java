@@ -2,8 +2,12 @@ package br.com.jordan.cadeopenha.activity;
 
 import android.app.Activity;
 import android.location.Location;
+import android.os.Build;
 import android.os.Bundle;
+import android.util.TypedValue;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
@@ -41,6 +45,8 @@ import br.com.jordan.cadeopenha.util.GPSTracker;
 
 public class MainActivity extends Activity implements OnMapReadyCallback, AsyncTaskListenerBuscarPenhas, AsyncTaskListenerGetWaypoints, GoogleMap.OnMarkerClickListener, GoogleMap.OnMyLocationChangeListener {
 
+    private boolean FLAG_ROTA_DESENHADA = false;
+
     private GoogleMap map;
     private GPSTracker gps;
     private AdView mAdView;
@@ -57,6 +63,7 @@ public class MainActivity extends Activity implements OnMapReadyCallback, AsyncT
     private Penhas penhasLocalizados = new Penhas();
     private BuscarPenhasTask task;
 
+    LatLng latLngRotaPenha = new LatLng(-23.528918, -46.585642);
     LatLng latLngDestino = new LatLng(-23.512102, -46.530783);
     LatLng latLngOrigem = new LatLng(-23.589442, -46.634740);
     LatLng latLngCurrentLocation;
@@ -66,9 +73,11 @@ public class MainActivity extends Activity implements OnMapReadyCallback, AsyncT
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        setStatusBarColor(findViewById(R.id.statusBarBackground),getResources().getColor(android.R.color.background_dark));
+
         mAdView = (AdView) findViewById(R.id.adView);
-        AdRequest adRequest = new AdRequest.Builder().addTestDevice("ca-app-pub-7837785537844734/7704095608").build();
-        mAdView.loadAd(adRequest);
+        //AdRequest adRequest = new AdRequest.Builder().addTestDevice("ca-app-pub-7837785537844734/7704095608").build();
+        //mAdView.loadAd(adRequest);
 
         mapFragment = (MapFragment) getFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
@@ -105,8 +114,7 @@ public class MainActivity extends Activity implements OnMapReadyCallback, AsyncT
         map.getUiSettings().setZoomControlsEnabled(true);
         map.setOnMyLocationChangeListener(this);
 
-        LatLng locationSP = new LatLng(-23.528918, -46.585642);
-        CameraPosition cameraPos = new CameraPosition.Builder().target(locationSP).zoom(13).build();
+        CameraPosition cameraPos = new CameraPosition.Builder().target(latLngRotaPenha).zoom(11).build();
         map.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPos));
 
         gps = new GPSTracker(this);
@@ -167,26 +175,26 @@ public class MainActivity extends Activity implements OnMapReadyCallback, AsyncT
 
         if (gps.canGetLocation()) {
             penhaMaisProximo = getPenhaMaisProximo(penhasLocalizados, latLngCurrentLocation);
-        }
 
-        optionsm = new MarkerOptions();
-        optionsm.position(latLngCurrentLocation).title(getString(R.string.you_are_here))
-                .icon(BitmapDescriptorFactory.fromResource(R.drawable.rsz_cool))
-                .draggable(false);
+            optionsm = new MarkerOptions();
+            optionsm.position(latLngCurrentLocation).title(getString(R.string.you_are_here))
+                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.rsz_cool))
+                    .draggable(false);
 
-        if (penhaMaisProximo > 0) {
-            Locale locale = new Locale("pt", "BR");
-            MessageFormat formatter = new MessageFormat("");
-            formatter.setLocale(locale);
+            if (penhaMaisProximo > 0) {
+                Locale locale = new Locale("pt", "BR");
+                MessageFormat formatter = new MessageFormat("");
+                formatter.setLocale(locale);
 
-            if (penhaMaisProximo < 1000) {
-                optionsm.snippet(formatter.format("O Penha mais próximo está a {0} metros de você", String.valueOf(penhaMaisProximo)));
-            } else {
-                optionsm.snippet(formatter.format("O Penha mais próximo está a {0} kilômetros de você", penhaMaisProximo / 1000));
+                if (penhaMaisProximo < 1000) {
+                    optionsm.snippet(formatter.format("O Penha mais próximo está a {0} metros de você", String.valueOf(penhaMaisProximo)));
+                } else {
+                    optionsm.snippet(formatter.format("O Penha mais próximo está a {0} kilômetros de você", penhaMaisProximo / 1000));
+                }
             }
-        }
 
-        markerLocale = map.addMarker(optionsm);
+            markerLocale = map.addMarker(optionsm);
+        }
     }
 
     @Override
@@ -201,6 +209,10 @@ public class MainActivity extends Activity implements OnMapReadyCallback, AsyncT
             options.width(2);
             Polyline p = map.addPolyline(options);
             latLngAnteror = waypoint;
+
+            if(!FLAG_ROTA_DESENHADA){
+                FLAG_ROTA_DESENHADA = true;
+            }
         }
 
         map.addMarker(new MarkerOptions().position(latLngOrigem)
@@ -264,6 +276,11 @@ public class MainActivity extends Activity implements OnMapReadyCallback, AsyncT
     }
 
     public void refreshPenhaOnMap(View view) {
+        if(!FLAG_ROTA_DESENHADA){
+            GoogleAddressTask googleAddressTask = new GoogleAddressTask(this, this);
+            googleAddressTask.execute();
+        }
+
         for (Marker m : markersPenha) {
             m.remove();
         }
@@ -272,5 +289,40 @@ public class MainActivity extends Activity implements OnMapReadyCallback, AsyncT
         task.execute();
 
         setMarkerLocale();
+
+        CameraPosition cameraPos = new CameraPosition.Builder().target(latLngRotaPenha).zoom(11).build();
+        map.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPos));
+    }
+
+    public void setStatusBarColor(View statusBar,int color){
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            Window w = getWindow();
+            w.setFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS,WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
+            //status bar height
+            int actionBarHeight = getActionBarHeight();
+            int statusBarHeight = getStatusBarHeight();
+            //action bar height
+            statusBar.getLayoutParams().height = actionBarHeight + statusBarHeight;
+            statusBar.setBackgroundColor(color);
+        }
+    }
+
+    public int getActionBarHeight() {
+        int actionBarHeight = 0;
+        TypedValue tv = new TypedValue();
+        if (getTheme().resolveAttribute(android.R.attr.actionBarSize, tv, true))
+        {
+            actionBarHeight = TypedValue.complexToDimensionPixelSize(tv.data,getResources().getDisplayMetrics());
+        }
+        return actionBarHeight;
+    }
+
+    public int getStatusBarHeight() {
+        int result = 0;
+        int resourceId = getResources().getIdentifier("status_bar_height", "dimen", "android");
+        if (resourceId > 0) {
+            result = getResources().getDimensionPixelSize(resourceId);
+        }
+        return result;
     }
 }
