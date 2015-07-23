@@ -4,8 +4,12 @@ import android.app.Activity;
 import android.location.Location;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdSize;
+import com.google.android.gms.ads.AdView;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -13,8 +17,6 @@ import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
-import com.google.android.gms.maps.model.Circle;
-import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -37,10 +39,13 @@ import br.com.jordan.cadeopenha.task.GoogleAddressTask;
 import br.com.jordan.cadeopenha.util.GPSTracker;
 
 
-public class MainActivity extends Activity implements OnMapReadyCallback, AsyncTaskListenerBuscarPenhas, AsyncTaskListenerGetWaypoints, GoogleMap.OnMarkerClickListener, GoogleMap.OnMyLocationChangeListener{
+public class MainActivity extends Activity implements OnMapReadyCallback, AsyncTaskListenerBuscarPenhas, AsyncTaskListenerGetWaypoints, GoogleMap.OnMarkerClickListener, GoogleMap.OnMyLocationChangeListener {
 
     private GoogleMap map;
     private GPSTracker gps;
+    private AdView mAdView;
+    private final String ANÚNCIO_ID = "BANNER_ANUNCIO";
+
 
     private MapFragment mapFragment;
     private MarkerOptions optionsm;
@@ -61,17 +66,37 @@ public class MainActivity extends Activity implements OnMapReadyCallback, AsyncT
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        mAdView = (AdView) findViewById(R.id.adView);
+        AdRequest adRequest = new AdRequest.Builder().addTestDevice("ca-app-pub-7837785537844734/7704095608").build();
+        mAdView.loadAd(adRequest);
+
         mapFragment = (MapFragment) getFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
         mapFragment.getView().setVisibility(View.VISIBLE);
 
-
         GoogleAddressTask googleAddressTask = new GoogleAddressTask(this, this);
-        googleAddressTask.execute(getResources().getStringArray(R.array.waypoints));
+        googleAddressTask.execute();
 
         task = new BuscarPenhasTask(this, this);
         task.execute();
+    }
 
+    @Override
+    protected void onPause() {
+        super.onPause();
+        mAdView.pause();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        mAdView.resume();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        mAdView.destroy();
     }
 
     @Override
@@ -86,18 +111,18 @@ public class MainActivity extends Activity implements OnMapReadyCallback, AsyncT
 
         gps = new GPSTracker(this);
 
-        if(gps.canGetLocation()) {
+        if (gps.canGetLocation()) {
             double latitude = gps.getLatitude();
             double longitude = gps.getLongitude();
 
             latLngCurrentLocation = new LatLng(latitude, longitude);
 
-        }else{
+        } else {
             Toast.makeText(this, "GPS desligado", Toast.LENGTH_LONG).show();
         }
     }
 
-    private void markerPenhasOnMap(Penhas penhas){
+    private void markerPenhasOnMap(Penhas penhas) {
         for (Penha penha : penhas.getListPenha()) {
 
             optionsm = new MarkerOptions();
@@ -127,19 +152,20 @@ public class MainActivity extends Activity implements OnMapReadyCallback, AsyncT
         if (result.getListPenha().size() > 0) {
             penhasLocalizados = result;
             Toast.makeText(this, "Penhas localizados :)", Toast.LENGTH_LONG).show();
-
-            setMarkerLocale();
-
             markerPenhasOnMap(penhasLocalizados);
 
-        }else{
+            markerPenhasOnMap(penhasLocalizados);
+        } else {
             Toast.makeText(this, "Nenhum penha encontrado :(", Toast.LENGTH_LONG).show();
         }
     }
 
-    public void setMarkerLocale(){
-        markerLocale.remove();
-        if(gps.canGetLocation()){
+    public void setMarkerLocale() {
+        if (markerLocale != null) {
+            markerLocale.remove();
+        }
+
+        if (gps.canGetLocation()) {
             penhaMaisProximo = getPenhaMaisProximo(penhasLocalizados, latLngCurrentLocation);
         }
 
@@ -148,14 +174,14 @@ public class MainActivity extends Activity implements OnMapReadyCallback, AsyncT
                 .icon(BitmapDescriptorFactory.fromResource(R.drawable.rsz_cool))
                 .draggable(false);
 
-        if(penhaMaisProximo > 0){
-            Locale locale = new Locale("pt","BR");
+        if (penhaMaisProximo > 0) {
+            Locale locale = new Locale("pt", "BR");
             MessageFormat formatter = new MessageFormat("");
             formatter.setLocale(locale);
 
-            if(penhaMaisProximo < 1000) {
+            if (penhaMaisProximo < 1000) {
                 optionsm.snippet(formatter.format("O Penha mais próximo está a {0} metros de você", String.valueOf(penhaMaisProximo)));
-            }else{
+            } else {
                 optionsm.snippet(formatter.format("O Penha mais próximo está a {0} kilômetros de você", penhaMaisProximo / 1000));
             }
         }
@@ -167,7 +193,7 @@ public class MainActivity extends Activity implements OnMapReadyCallback, AsyncT
     public void onTaskCompleteGetWaypoints(List<LatLng> result) {
         LatLng latLngAnteror = result.get(0);
         result.remove(0);
-        for(LatLng waypoint : result) {
+        for (LatLng waypoint : result) {
 
             PolylineOptions options = new PolylineOptions();
             options.add(latLngAnteror);
@@ -186,14 +212,14 @@ public class MainActivity extends Activity implements OnMapReadyCallback, AsyncT
                         BitmapDescriptorFactory.HUE_YELLOW)));
     }
 
-    private float getPenhaMaisProximo(Penhas penhas, LatLng currentLocation){
+    private float getPenhaMaisProximo(Penhas penhas, LatLng currentLocation) {
         List<Float> distancias = new ArrayList<>();
 
         Location location = new Location("");
         location.setLatitude(currentLocation.latitude);
         location.setLongitude(currentLocation.longitude);
 
-        for(Penha penha : penhas.getListPenha()) {
+        for (Penha penha : penhas.getListPenha()) {
             Location penhaLocation = new Location("");
             penhaLocation.setLatitude(penha.getLatitude());
             penhaLocation.setLongitude(penha.getLongitude());
@@ -207,7 +233,7 @@ public class MainActivity extends Activity implements OnMapReadyCallback, AsyncT
     @Override
     public void onMyLocationChange(Location location) {
         gps = new GPSTracker(this);
-        if(gps.canGetLocation()) {
+        if (gps.canGetLocation()) {
             markerLocale.remove();
             double latitude = gps.getLatitude();
             double longitude = gps.getLongitude();
@@ -219,13 +245,13 @@ public class MainActivity extends Activity implements OnMapReadyCallback, AsyncT
                     .icon(BitmapDescriptorFactory.fromResource(R.drawable.rsz_cool))
                     .draggable(false);
 
-        }else{
+        } else {
             Toast.makeText(this, "GPS desligado", Toast.LENGTH_LONG).show();
         }
     }
 
 
-    public void refreshLocation(View view){
+    public void refreshLocation(View view) {
 
         gps = new GPSTracker(this);
         latLngCurrentLocation = new LatLng(gps.getLatitude(), gps.getLongitude());
@@ -237,13 +263,14 @@ public class MainActivity extends Activity implements OnMapReadyCallback, AsyncT
         setMarkerLocale();
     }
 
-    public void refreshPenhaOnMap(View view){
-        for(Marker m : markersPenha){
+    public void refreshPenhaOnMap(View view) {
+        for (Marker m : markersPenha) {
             m.remove();
         }
-        markerLocale.remove();
 
         task = new BuscarPenhasTask(this, this);
         task.execute();
+
+        setMarkerLocale();
     }
 }

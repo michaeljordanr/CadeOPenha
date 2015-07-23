@@ -100,7 +100,6 @@ public class GoogleAddressTask extends AsyncTask<String[], Void, List<ShapePenha
 //            try {
 //                jsonObject = new JSONObject(stringBuilder.toString());
 //            } catch (JSONException e) {
-//                // TODO Auto-generated catch block
 //                e.printStackTrace();
 //            }
 //
