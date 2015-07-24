@@ -9,6 +9,7 @@ import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.ads.AdRequest;
@@ -26,6 +27,8 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
+
+import org.w3c.dom.Text;
 
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -52,6 +55,9 @@ public class MainActivity extends Activity implements OnMapReadyCallback, AsyncT
     private AdView mAdView;
     private final String ANÚNCIO_ID = "BANNER_ANUNCIO";
 
+    Locale locale = new Locale("pt", "BR");
+    MessageFormat formatter = new MessageFormat("");
+
 
     private MapFragment mapFragment;
     private MarkerOptions optionsm;
@@ -72,8 +78,9 @@ public class MainActivity extends Activity implements OnMapReadyCallback, AsyncT
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        formatter.setLocale(locale);
 
-        setStatusBarColor(findViewById(R.id.statusBarBackground),getResources().getColor(android.R.color.background_dark));
+        setStatusBarColor(findViewById(R.id.statusBarBackground), getResources().getColor(android.R.color.background_dark));
 
         mAdView = (AdView) findViewById(R.id.adView);
         //AdRequest adRequest = new AdRequest.Builder().addTestDevice("ca-app-pub-7837785537844734/7704095608").build();
@@ -128,6 +135,56 @@ public class MainActivity extends Activity implements OnMapReadyCallback, AsyncT
         } else {
             Toast.makeText(this, "GPS desligado", Toast.LENGTH_LONG).show();
         }
+
+        map.setInfoWindowAdapter(new GoogleMap.InfoWindowAdapter() {
+            @Override
+            public View getInfoWindow(Marker marker) {
+                return null;
+            }
+
+            @Override
+            public View getInfoContents(Marker marker) {
+                if (marker.getTitle() == null) {
+                    return null;
+                } else if (marker.getTitle().equals(getString(R.string.you_are_here))) {
+                    View view = getLayoutInflater().inflate(R.layout.info_window_location, null);
+
+                    TextView txtModelo = (TextView) view.findViewById(R.id.txt_location);
+                    txtModelo.setText(marker.getSnippet());
+
+                    return view;
+                } else {
+                    View view = getLayoutInflater().inflate(R.layout.info_window, null);
+
+                    TextView txtModelo = (TextView) view.findViewById(R.id.txt_modelo);
+                    txtModelo.setText(marker.getTitle());
+
+                    TextView txtDistancia = (TextView) view.findViewById(R.id.txt_distancia);
+
+                    if (latLngCurrentLocation != null) {
+                        Location location = new Location("");
+                        location.setLatitude(latLngCurrentLocation.latitude);
+                        location.setLongitude(latLngCurrentLocation.longitude);
+
+                        LatLng penha = marker.getPosition();
+
+                        Location penhaLocation = new Location("");
+                        penhaLocation.setLatitude(penha.latitude);
+                        penhaLocation.setLongitude(penha.longitude);
+                        float distancia = location.distanceTo(penhaLocation);
+
+                        if (distancia < 1000) {
+                            txtDistancia.setText(formatter.format("Você está a {0}\n metros de distância", String.valueOf(distancia)));
+                        } else {
+                            txtDistancia.setText(formatter.format("Você está a {0}\n kilômetros de distância", distancia / 1000));
+                        }
+                    } else {
+                        txtDistancia.setVisibility(View.INVISIBLE);
+                    }
+                    return view;
+                }
+            }
+        });
     }
 
     private void markerPenhasOnMap(Penhas penhas) {
@@ -137,7 +194,7 @@ public class MainActivity extends Activity implements OnMapReadyCallback, AsyncT
 
             LatLng latLng = new LatLng(penha.getLatitude(), penha.getLongitude());
 
-            optionsm.position(latLng).title("Penha " + penha.getNumero()).snippet(getString(R.string.description_penha))
+            optionsm.position(latLng).title("Penha " + penha.getNumero())
                     .icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_penha))
                     .draggable(false);
 
@@ -161,8 +218,7 @@ public class MainActivity extends Activity implements OnMapReadyCallback, AsyncT
             penhasLocalizados = result;
             Toast.makeText(this, "Penhas localizados :)", Toast.LENGTH_LONG).show();
             markerPenhasOnMap(penhasLocalizados);
-
-            markerPenhasOnMap(penhasLocalizados);
+            setMarkerLocale();
         } else {
             Toast.makeText(this, "Nenhum penha encontrado :(", Toast.LENGTH_LONG).show();
         }
@@ -182,14 +238,11 @@ public class MainActivity extends Activity implements OnMapReadyCallback, AsyncT
                     .draggable(false);
 
             if (penhaMaisProximo > 0) {
-                Locale locale = new Locale("pt", "BR");
-                MessageFormat formatter = new MessageFormat("");
-                formatter.setLocale(locale);
 
                 if (penhaMaisProximo < 1000) {
-                    optionsm.snippet(formatter.format("O Penha mais próximo está a {0} metros de você", String.valueOf(penhaMaisProximo)));
+                    optionsm.snippet(formatter.format("O Penha mais próximo está a\n {0} metros de você", String.valueOf(penhaMaisProximo)));
                 } else {
-                    optionsm.snippet(formatter.format("O Penha mais próximo está a {0} kilômetros de você", penhaMaisProximo / 1000));
+                    optionsm.snippet(formatter.format("O Penha mais próximo está a\n {0} kilômetros de você", penhaMaisProximo / 1000));
                 }
             }
 
@@ -207,10 +260,11 @@ public class MainActivity extends Activity implements OnMapReadyCallback, AsyncT
             options.add(latLngAnteror);
             options.add(waypoint);
             options.width(2);
+            options.geodesic(true);
             Polyline p = map.addPolyline(options);
             latLngAnteror = waypoint;
 
-            if(!FLAG_ROTA_DESENHADA){
+            if (!FLAG_ROTA_DESENHADA) {
                 FLAG_ROTA_DESENHADA = true;
             }
         }
@@ -276,7 +330,7 @@ public class MainActivity extends Activity implements OnMapReadyCallback, AsyncT
     }
 
     public void refreshPenhaOnMap(View view) {
-        if(!FLAG_ROTA_DESENHADA){
+        if (!FLAG_ROTA_DESENHADA) {
             GoogleAddressTask googleAddressTask = new GoogleAddressTask(this, this);
             googleAddressTask.execute();
         }
@@ -294,10 +348,10 @@ public class MainActivity extends Activity implements OnMapReadyCallback, AsyncT
         map.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPos));
     }
 
-    public void setStatusBarColor(View statusBar,int color){
+    public void setStatusBarColor(View statusBar, int color) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
             Window w = getWindow();
-            w.setFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS,WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
+            w.setFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS, WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
             //status bar height
             int actionBarHeight = getActionBarHeight();
             int statusBarHeight = getStatusBarHeight();
@@ -310,9 +364,8 @@ public class MainActivity extends Activity implements OnMapReadyCallback, AsyncT
     public int getActionBarHeight() {
         int actionBarHeight = 0;
         TypedValue tv = new TypedValue();
-        if (getTheme().resolveAttribute(android.R.attr.actionBarSize, tv, true))
-        {
-            actionBarHeight = TypedValue.complexToDimensionPixelSize(tv.data,getResources().getDisplayMetrics());
+        if (getTheme().resolveAttribute(android.R.attr.actionBarSize, tv, true)) {
+            actionBarHeight = TypedValue.complexToDimensionPixelSize(tv.data, getResources().getDisplayMetrics());
         }
         return actionBarHeight;
     }

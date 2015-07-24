@@ -22,7 +22,7 @@ public class Splash extends Activity implements Runnable {
         setStatusBarColor(findViewById(R.id.statusBarBackground), getResources().getColor(android.R.color.white));
 
         Handler h = new Handler();
-        h.postDelayed(this, 5000);
+        h.postDelayed(this, 3000);
     }
 
     @Override
