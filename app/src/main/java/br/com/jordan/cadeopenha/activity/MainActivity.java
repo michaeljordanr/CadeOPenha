@@ -53,11 +53,8 @@ public class MainActivity extends Activity implements OnMapReadyCallback, AsyncT
     private GoogleMap map;
     private GPSTracker gps;
     private AdView mAdView;
-    private final String ANÚNCIO_ID = "BANNER_ANUNCIO";
 
     Locale locale = new Locale("pt", "BR");
-    MessageFormat formatter = new MessageFormat("");
-
 
     private MapFragment mapFragment;
     private MarkerOptions optionsm;
@@ -78,13 +75,12 @@ public class MainActivity extends Activity implements OnMapReadyCallback, AsyncT
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        formatter.setLocale(locale);
 
         setStatusBarColor(findViewById(R.id.statusBarBackground), getResources().getColor(android.R.color.background_dark));
 
         mAdView = (AdView) findViewById(R.id.adView);
-        //AdRequest adRequest = new AdRequest.Builder().addTestDevice("ca-app-pub-7837785537844734/7704095608").build();
-        //mAdView.loadAd(adRequest);
+        AdRequest adRequest = new AdRequest.Builder().addTestDevice("ca-app-pub-7837785537844734/7704095608").build();
+        mAdView.loadAd(adRequest);
 
         mapFragment = (MapFragment) getFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
@@ -174,9 +170,9 @@ public class MainActivity extends Activity implements OnMapReadyCallback, AsyncT
                         float distancia = location.distanceTo(penhaLocation);
 
                         if (distancia < 1000) {
-                            txtDistancia.setText(formatter.format("Você está a {0}\n metros de distância", String.valueOf(distancia)));
+                            txtDistancia.setText(String.format(locale, "Você está a %.2f\n metros de distância", distancia));
                         } else {
-                            txtDistancia.setText(formatter.format("Você está a {0}\n kilômetros de distância", distancia / 1000));
+                            txtDistancia.setText(String.format(locale, "Você está a %.2f\n kilômetros de distância", distancia / 1000));
                         }
                     } else {
                         txtDistancia.setVisibility(View.INVISIBLE);
@@ -240,9 +236,9 @@ public class MainActivity extends Activity implements OnMapReadyCallback, AsyncT
             if (penhaMaisProximo > 0) {
 
                 if (penhaMaisProximo < 1000) {
-                    optionsm.snippet(formatter.format("O Penha mais próximo está a\n {0} metros de você", String.valueOf(penhaMaisProximo)));
+                    optionsm.snippet(String.format(locale, "O Penha mais próximo está a\n %.2f metros de você", penhaMaisProximo));
                 } else {
-                    optionsm.snippet(formatter.format("O Penha mais próximo está a\n {0} kilômetros de você", penhaMaisProximo / 1000));
+                    optionsm.snippet(String.format(locale, "O Penha mais próximo está a\n %.2f kilômetros de você", (penhaMaisProximo / 1000)));
                 }
             }
 
@@ -312,7 +308,7 @@ public class MainActivity extends Activity implements OnMapReadyCallback, AsyncT
                     .draggable(false);
 
         } else {
-            Toast.makeText(this, "GPS desligado", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, getString(R.string.gps_off), Toast.LENGTH_LONG).show();
         }
     }
 
@@ -320,13 +316,18 @@ public class MainActivity extends Activity implements OnMapReadyCallback, AsyncT
     public void refreshLocation(View view) {
 
         gps = new GPSTracker(this);
-        latLngCurrentLocation = new LatLng(gps.getLatitude(), gps.getLongitude());
+        if(gps.canGetLocation()) {
+            latLngCurrentLocation = new LatLng(gps.getLatitude(), gps.getLongitude());
 
-        CameraPosition cameraPos = new CameraPosition.Builder().target(latLngCurrentLocation).zoom(map.getCameraPosition().zoom).build();
-        CameraUpdate update = CameraUpdateFactory.newCameraPosition(cameraPos);
-        map.animateCamera(update);
+            CameraPosition cameraPos = new CameraPosition.Builder().target(latLngCurrentLocation).zoom(map.getCameraPosition().zoom).build();
+            CameraUpdate update = CameraUpdateFactory.newCameraPosition(cameraPos);
+            map.animateCamera(update);
 
-        setMarkerLocale();
+            setMarkerLocale();
+        }
+        else{
+            Toast.makeText(this, getString(R.string.gps_off), Toast.LENGTH_SHORT).show();
+        }
     }
 
     public void refreshPenhaOnMap(View view) {

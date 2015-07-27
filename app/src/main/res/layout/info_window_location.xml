@@ -16,7 +16,8 @@
         android:id="@+id/txt_location"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="O Penha mais próximo esta a"/>
+        android:text="O Penha mais próximo esta a"
+        android:textColor="@android:color/secondary_text_light"/>
 
 
 

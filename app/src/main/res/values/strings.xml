@@ -18,6 +18,7 @@
     <string name="gps_disabled_question">O GPS não está habilitado. Gostaria de ir para a tela de configuração?</string>
     <string name="settings">Configurações</string>
     <string name="cancel">Cancelar</string>
+    <string name="gps_off">GPS desligado</string>
 
     <string-array name="waypoints">
         <item>Av. Lins De Vasconcelos, 3139</item>
