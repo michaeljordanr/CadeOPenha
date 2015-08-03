@@ -1,6 +1,12 @@
 package br.com.jordan.cadeopenha.activity;
 
 import android.app.Activity;
+import android.app.AlarmManager;
+import android.app.PendingIntent;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.graphics.Color;
 import android.location.Location;
 import android.os.Build;
 import android.os.Bundle;
@@ -22,6 +28,8 @@ import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
+import com.google.android.gms.maps.model.Circle;
+import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -33,26 +41,35 @@ import org.w3c.dom.Text;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 import br.com.jordan.cadeopenha.R;
 import br.com.jordan.cadeopenha.interfaces.AsyncTaskListenerBuscarPenhas;
 import br.com.jordan.cadeopenha.interfaces.AsyncTaskListenerGetWaypoints;
 import br.com.jordan.cadeopenha.model.Penha;
+import br.com.jordan.cadeopenha.model.PenhaMaisProximo;
 import br.com.jordan.cadeopenha.model.Penhas;
+import br.com.jordan.cadeopenha.receiver.RadarPenhaReceiver;
 import br.com.jordan.cadeopenha.task.BuscarPenhasTask;
 import br.com.jordan.cadeopenha.task.GoogleAddressTask;
 import br.com.jordan.cadeopenha.util.GPSTracker;
+import br.com.jordan.cadeopenha.util.GoogleDirection;
+import br.com.jordan.cadeopenha.util.PenhaUtil;
 
 
 public class MainActivity extends Activity implements OnMapReadyCallback, AsyncTaskListenerBuscarPenhas, AsyncTaskListenerGetWaypoints, GoogleMap.OnMarkerClickListener, GoogleMap.OnMyLocationChangeListener {
 
+    private final static int DISTANCIA_LIMITE = 1000;
     private boolean FLAG_ROTA_DESENHADA = false;
 
     private GoogleMap map;
     private GPSTracker gps;
     private AdView mAdView;
+    private GoogleDirection objGoogleDirection;
+    private PenhaUtil penhaUtil = new PenhaUtil();
 
     Locale locale = new Locale("pt", "BR");
 
@@ -61,6 +78,7 @@ public class MainActivity extends Activity implements OnMapReadyCallback, AsyncT
     private List<Marker> markersPenha = new ArrayList<>();
     private Marker markerLocale;
     float penhaMaisProximo = 0;
+    Circle circleLocale;
 
 
     private Penhas penhasLocalizados = new Penhas();
@@ -71,12 +89,22 @@ public class MainActivity extends Activity implements OnMapReadyCallback, AsyncT
     LatLng latLngOrigem = new LatLng(-23.589442, -46.634740);
     LatLng latLngCurrentLocation;
 
+    PendingIntent pi;
+    private boolean FLAG_PENHA_RADAR = false;
+
+    private RadarPenhaReceiver receiver;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        Intent alarmIntent = new Intent(this, RadarPenhaReceiver.class);
+        pi = PendingIntent.getBroadcast(this, 0, alarmIntent, 0);
+
         setStatusBarColor(findViewById(R.id.statusBarBackground), getResources().getColor(android.R.color.background_dark));
+
+        objGoogleDirection = new GoogleDirection(this);
 
         mAdView = (AdView) findViewById(R.id.adView);
         AdRequest adRequest = new AdRequest.Builder().addTestDevice("ca-app-pub-7837785537844734/7704095608").build();
@@ -91,6 +119,32 @@ public class MainActivity extends Activity implements OnMapReadyCallback, AsyncT
 
         task = new BuscarPenhasTask(this, this);
         task.execute();
+    }
+
+    public void onRadar(View view) {
+        if (!FLAG_PENHA_RADAR) {
+            //receiver = new RadarPenhaReceiver();
+            //IntentFilter intentFilter = new IntentFilter();
+            //intentFilter.addAction("br.com.jordan.cadeopenha.LIGA_RADAR");
+            //registerReceiver(receiver, intentFilter);
+
+            //Intent intent = new Intent("br.com.jordan.cadeopenha.LIGA_RADAR");
+            //sendBroadcast(intent);
+
+            AlarmManager manager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+            int interval = 10000;
+
+            manager.setInexactRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), interval, pi);
+            Toast.makeText(this, "Radar de Penha ligado!", Toast.LENGTH_SHORT).show();
+            FLAG_PENHA_RADAR = true;
+        }else{
+            //unregisterReceiver(receiver);
+
+            AlarmManager manager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+            manager.cancel(pi);
+            Toast.makeText(this, "Radar de Penha desligado!", Toast.LENGTH_SHORT).show();
+            FLAG_PENHA_RADAR = false;
+        }
     }
 
     @Override
@@ -109,6 +163,9 @@ public class MainActivity extends Activity implements OnMapReadyCallback, AsyncT
     protected void onDestroy() {
         super.onDestroy();
         mAdView.destroy();
+        //if(receiver != null) {
+        //    unregisterReceiver(receiver);
+        //}
     }
 
     @Override
@@ -226,7 +283,15 @@ public class MainActivity extends Activity implements OnMapReadyCallback, AsyncT
         }
 
         if (gps.canGetLocation()) {
-            penhaMaisProximo = getPenhaMaisProximo(penhasLocalizados, latLngCurrentLocation);
+            PenhaMaisProximo obj = penhaUtil.getPenhaMaisProximo(penhasLocalizados, latLngCurrentLocation);
+
+            LatLng penhaProx = obj.getPosicao();
+            penhaMaisProximo = obj.getDistancia();
+
+            double distancia = objGoogleDirection.distance(latLngCurrentLocation.latitude, latLngCurrentLocation.longitude, penhaProx.latitude, penhaProx.longitude, 'K');
+            distancia = distancia * 1000; //metter to km
+
+            //Toast.makeText(this, String.format(locale, "Penha mais proximo esta num raio de: %.2f metros de você", (distancia)), Toast.LENGTH_LONG).show();
 
             optionsm = new MarkerOptions();
             optionsm.position(latLngCurrentLocation).title(getString(R.string.you_are_here))
@@ -243,6 +308,7 @@ public class MainActivity extends Activity implements OnMapReadyCallback, AsyncT
             }
 
             markerLocale = map.addMarker(optionsm);
+            drawCircle(latLngCurrentLocation);
         }
     }
 
@@ -274,24 +340,6 @@ public class MainActivity extends Activity implements OnMapReadyCallback, AsyncT
                         BitmapDescriptorFactory.HUE_YELLOW)));
     }
 
-    private float getPenhaMaisProximo(Penhas penhas, LatLng currentLocation) {
-        List<Float> distancias = new ArrayList<>();
-
-        Location location = new Location("");
-        location.setLatitude(currentLocation.latitude);
-        location.setLongitude(currentLocation.longitude);
-
-        for (Penha penha : penhas.getListPenha()) {
-            Location penhaLocation = new Location("");
-            penhaLocation.setLatitude(penha.getLatitude());
-            penhaLocation.setLongitude(penha.getLongitude());
-            distancias.add(location.distanceTo(penhaLocation));
-        }
-
-        Collections.sort(distancias);
-        return distancias.get(0);
-    }
-
     @Override
     public void onMyLocationChange(Location location) {
         gps = new GPSTracker(this);
@@ -316,7 +364,7 @@ public class MainActivity extends Activity implements OnMapReadyCallback, AsyncT
     public void refreshLocation(View view) {
 
         gps = new GPSTracker(this);
-        if(gps.canGetLocation()) {
+        if (gps.canGetLocation()) {
             latLngCurrentLocation = new LatLng(gps.getLatitude(), gps.getLongitude());
 
             CameraPosition cameraPos = new CameraPosition.Builder().target(latLngCurrentLocation).zoom(map.getCameraPosition().zoom).build();
@@ -324,8 +372,7 @@ public class MainActivity extends Activity implements OnMapReadyCallback, AsyncT
             map.animateCamera(update);
 
             setMarkerLocale();
-        }
-        else{
+        } else {
             Toast.makeText(this, getString(R.string.gps_off), Toast.LENGTH_SHORT).show();
         }
     }
@@ -343,10 +390,10 @@ public class MainActivity extends Activity implements OnMapReadyCallback, AsyncT
         task = new BuscarPenhasTask(this, this);
         task.execute();
 
-        setMarkerLocale();
+        //setMarkerLocale();
 
-        CameraPosition cameraPos = new CameraPosition.Builder().target(latLngRotaPenha).zoom(11).build();
-        map.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPos));
+        //CameraPosition cameraPos = new CameraPosition.Builder().target(latLngRotaPenha).zoom(11).build();
+        //map.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPos));
     }
 
     public void setStatusBarColor(View statusBar, int color) {
@@ -379,4 +426,32 @@ public class MainActivity extends Activity implements OnMapReadyCallback, AsyncT
         }
         return result;
     }
+
+    private void drawCircle(LatLng point) {
+        if(circleLocale != null){
+            circleLocale.remove();
+        }
+        // Instantiating CircleOptions to draw a circle around the marker
+        CircleOptions circleOptions = new CircleOptions();
+
+        // Specifying the center of the circle
+        circleOptions.center(point);
+
+        // Radius of the circle
+        circleOptions.radius(1000);
+
+        // Border color of the circle
+        circleOptions.strokeColor(0xff00ffff);
+
+        // Fill color of the circle
+        circleOptions.fillColor(0x4000ffff);
+
+        // Border width of the circle
+        circleOptions.strokeWidth(1);
+
+        // Adding the circle to the GoogleMap
+        circleLocale = map.addCircle(circleOptions);
+    }
+
+
 }

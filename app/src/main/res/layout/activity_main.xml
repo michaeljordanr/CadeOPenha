@@ -25,6 +25,7 @@
             android:layout_height="wrap_content"
             android:layout_centerHorizontal="true"
             android:layout_alignParentBottom="true"
+            android:layout_marginTop="25px"
             android:layout_gravity="center|top"
             ads:adSize="BANNER"
             ads:adUnitId="@string/id_anuncio">
@@ -52,6 +53,17 @@
             android:layout_marginRight="20dp"
             android:background="@drawable/gps_position"
             android:onClick="refreshLocation"/>
+
+        <Button
+            android:id="@+id/btn_radar"
+            android:layout_width="26dp"
+            android:layout_height="26dp"
+            android:layout_gravity="right"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="120dp"
+            android:layout_marginRight="20dp"
+            android:background="@drawable/radar"
+            android:onClick="onRadar"/>
 
     <ProgressBar
         android:layout_width="match_parent"
