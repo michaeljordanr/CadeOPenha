@@ -90,7 +90,7 @@ public class MainActivity extends Activity implements OnMapReadyCallback, AsyncT
     LatLng latLngCurrentLocation;
 
     PendingIntent pi;
-    private boolean FLAG_PENHA_RADAR = false;
+    private boolean FLAG_PENHA_RADAR = true;
 
     private RadarPenhaReceiver receiver;
 
