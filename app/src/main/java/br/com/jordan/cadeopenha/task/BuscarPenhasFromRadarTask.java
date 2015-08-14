@@ -17,6 +17,8 @@ import org.apache.http.util.EntityUtils;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.List;
 
 import br.com.jordan.cadeopenha.R;
 import br.com.jordan.cadeopenha.interfaces.AsyncTaskListenerBuscarPenhas;
@@ -25,9 +27,10 @@ import br.com.jordan.cadeopenha.model.Penhas;
 /**
  * Created by techresult on 03/08/2015.
  */
-public class BuscarPenhasFromRadarTask  extends AsyncTask<LatLng, Void, Penhas> {
+public class BuscarPenhasFromRadarTask  extends AsyncTask<LatLng, Void, List<Penhas>> {
     private static final String URL_Auth = "http://api.olhovivo.sptrans.com.br/v0/Login/Autenticar?token=";
     private static final String URL_SearchPenhas = "http://api.olhovivo.sptrans.com.br/v0/Posicao?codigoLinha=33000";
+    private static final String URL_SearchPenhasOff = "http://api.olhovivo.sptrans.com.br/v0/Posicao?codigoLinha=232";
 
     private String responseStr;
 
@@ -35,6 +38,8 @@ public class BuscarPenhasFromRadarTask  extends AsyncTask<LatLng, Void, Penhas> 
     private Context context;
 
     private Penhas resultPenhas;
+    private Penhas resultPenhasOff;
+    private List<Penhas> result;
 
     public BuscarPenhasFromRadarTask(Context context, AsyncTaskListenerBuscarPenhas callback) {
         this.context = context;
@@ -42,7 +47,7 @@ public class BuscarPenhasFromRadarTask  extends AsyncTask<LatLng, Void, Penhas> 
     }
 
     @Override
-    protected Penhas doInBackground(LatLng... params) {
+    protected List<Penhas> doInBackground(LatLng... params) {
         try {
             HttpClient http = new DefaultHttpClient();
 
@@ -57,9 +62,22 @@ public class BuscarPenhasFromRadarTask  extends AsyncTask<LatLng, Void, Penhas> 
 
                 Type type = new TypeToken<Penhas>(){}.getType();
                 resultPenhas = new Gson().fromJson(responseStr, type);
+
+                //VOLTA DO PENHA
+                get = new HttpGet(URL_SearchPenhasOff);
+                responsePenhas = http.execute(get);
+                responseStr = EntityUtils.toString(responsePenhas.getEntity());
+
+                type = new TypeToken<Penhas>(){}.getType();
+                resultPenhasOff = new Gson().fromJson(responseStr, type);
             }
 
-            return resultPenhas;
+            result = new ArrayList<>();
+
+            result.add(resultPenhas);
+            result.add(resultPenhasOff);
+
+            return result;
         } catch (IOException e) {
             e.printStackTrace();
             return null;
@@ -67,7 +85,7 @@ public class BuscarPenhasFromRadarTask  extends AsyncTask<LatLng, Void, Penhas> 
     }
 
     @Override
-    protected void onPostExecute(Penhas penhas) {
+    protected void onPostExecute(List<Penhas> penhas) {
         try {
             callback.onTaskCompleteAutenticarAPI(penhas);
         } catch (final IllegalArgumentException e) {

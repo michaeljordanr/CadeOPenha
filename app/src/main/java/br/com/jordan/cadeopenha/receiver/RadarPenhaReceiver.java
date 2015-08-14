@@ -11,6 +11,7 @@ import android.widget.Toast;
 
 import com.google.android.gms.maps.model.LatLng;
 
+import java.util.List;
 import java.util.Locale;
 
 import br.com.jordan.cadeopenha.R;
@@ -51,10 +52,12 @@ public class RadarPenhaReceiver extends BroadcastReceiver implements AsyncTaskLi
     }
 
     @Override
-    public void onTaskCompleteAutenticarAPI(Penhas result) {
-        if (result.getListPenha().size() > 0) {
-            penhasLocalizados = result;
-            PenhaMaisProximo objPenhaProx = penhaUtil.getPenhaMaisProximo(result, latLngCurrentLocation);
+    public void onTaskCompleteAutenticarAPI(List<Penhas> result) {
+        Penhas penhas = result.get(0);
+
+        if (penhas.getListPenha().size() > 0) {
+            penhasLocalizados = penhas;
+            PenhaMaisProximo objPenhaProx = penhaUtil.getPenhaMaisProximo(penhas, latLngCurrentLocation);
 
             if(objPenhaProx.getDistancia() <= 1000){
                 //Toast.makeText(context, "PENHA PERTO: " + objPenhaProx.getDistancia(), Toast.LENGTH_LONG).show();

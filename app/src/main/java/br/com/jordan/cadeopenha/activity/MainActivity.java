@@ -67,7 +67,7 @@ public class MainActivity extends Activity implements OnMapReadyCallback, AsyncT
 
     private GoogleMap map;
     private GPSTracker gps;
-    private AdView mAdView;
+    //private AdView mAdView;
     private GoogleDirection objGoogleDirection;
     private PenhaUtil penhaUtil = new PenhaUtil();
 
@@ -94,6 +94,9 @@ public class MainActivity extends Activity implements OnMapReadyCallback, AsyncT
 
     private RadarPenhaReceiver receiver;
 
+    private static String URL_PENHA = "http://apibus.smed.xyz/api/shapes/55264";
+    private static String URL_VOLTA_PENHA = "http://apibus.smed.xyz/api/shapes/58713";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -106,16 +109,19 @@ public class MainActivity extends Activity implements OnMapReadyCallback, AsyncT
 
         objGoogleDirection = new GoogleDirection(this);
 
-        mAdView = (AdView) findViewById(R.id.adView);
-        AdRequest adRequest = new AdRequest.Builder().addTestDevice("ca-app-pub-7837785537844734/7704095608").build();
-        mAdView.loadAd(adRequest);
+        //mAdView = (AdView) findViewById(R.id.adView);
+        //AdRequest adRequest = new AdRequest.Builder().build();
+        //mAdView.loadAd(adRequest);
 
         mapFragment = (MapFragment) getFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
         mapFragment.getView().setVisibility(View.VISIBLE);
 
         GoogleAddressTask googleAddressTask = new GoogleAddressTask(this, this);
-        googleAddressTask.execute();
+        googleAddressTask.execute(URL_PENHA);
+
+        googleAddressTask = new GoogleAddressTask(this, this);
+        googleAddressTask.execute(URL_VOLTA_PENHA);
 
         task = new BuscarPenhasTask(this, this);
         task.execute();
@@ -150,19 +156,19 @@ public class MainActivity extends Activity implements OnMapReadyCallback, AsyncT
     @Override
     protected void onPause() {
         super.onPause();
-        mAdView.pause();
+        //mAdView.pause();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        mAdView.resume();
+        //mAdView.resume();
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        mAdView.destroy();
+        //mAdView.destroy();
         //if(receiver != null) {
         //    unregisterReceiver(receiver);
         //}
@@ -255,6 +261,21 @@ public class MainActivity extends Activity implements OnMapReadyCallback, AsyncT
         }
     }
 
+    private void markerPenhasOffOnMap(Penhas penhas) {
+        for (Penha penha : penhas.getListPenha()) {
+
+            optionsm = new MarkerOptions();
+
+            LatLng latLng = new LatLng(penha.getLatitude(), penha.getLongitude());
+
+            optionsm.position(latLng).title("Penha voltando " + penha.getNumero())
+                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_penha_off))
+                    .draggable(false);
+
+            markersPenha.add(map.addMarker(optionsm));
+        }
+    }
+
 
     @Override
     public boolean onMarkerClick(Marker marker) {
@@ -266,11 +287,15 @@ public class MainActivity extends Activity implements OnMapReadyCallback, AsyncT
 
 
     @Override
-    public void onTaskCompleteAutenticarAPI(Penhas result) {
-        if (result.getListPenha().size() > 0) {
-            penhasLocalizados = result;
+    public void onTaskCompleteAutenticarAPI(List<Penhas> result) {
+        Penhas penhas = result.get(0);
+        Penhas penhasOff = result.get(1);
+
+        if (penhas.getListPenha().size() > 0 || penhasOff.getListPenha().size() > 0) {
+            penhasLocalizados = penhas;
             Toast.makeText(this, "Penhas localizados :)", Toast.LENGTH_LONG).show();
             markerPenhasOnMap(penhasLocalizados);
+            markerPenhasOffOnMap(penhasOff);
             setMarkerLocale();
         } else {
             Toast.makeText(this, "Nenhum penha encontrado :(", Toast.LENGTH_LONG).show();
@@ -313,7 +338,13 @@ public class MainActivity extends Activity implements OnMapReadyCallback, AsyncT
     }
 
     @Override
-    public void onTaskCompleteGetWaypoints(List<LatLng> result) {
+    public void onTaskCompleteGetWaypoints(List<LatLng> result, int sentido) {
+        int color = Color.BLACK;
+
+        if(sentido == 1){
+            color = Color.RED;
+        }
+
         LatLng latLngAnteror = result.get(0);
         result.remove(0);
         for (LatLng waypoint : result) {
@@ -321,8 +352,9 @@ public class MainActivity extends Activity implements OnMapReadyCallback, AsyncT
             PolylineOptions options = new PolylineOptions();
             options.add(latLngAnteror);
             options.add(waypoint);
-            options.width(2);
+            options.width(3);
             options.geodesic(true);
+            options.color(color);
             Polyline p = map.addPolyline(options);
             latLngAnteror = waypoint;
 

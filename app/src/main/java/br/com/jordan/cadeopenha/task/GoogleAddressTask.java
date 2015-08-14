@@ -39,10 +39,15 @@ import br.com.jordan.cadeopenha.model.Penhas;
 import br.com.jordan.cadeopenha.model.ShapePenha;
 
 
-public class GoogleAddressTask extends AsyncTask<String[], Void, List<ShapePenha>> {
+public class GoogleAddressTask extends AsyncTask<String, Void, List<ShapePenha>> {
 
     private static final String USER_AUTH = "cadeopenha@cadeopenha.com";
     private static final String PASS_AUTH = "CadeOPenhaaaAPP";
+
+    private static String URL_PENHA = "http://apibus.smed.xyz/api/shapes/55264";
+    private static String URL_VOLTA_PENHA = "http://apibus.smed.xyz/api/shapes/58713";
+
+    int sentido = 0;
 
     List<LatLng> lstLagLong = new ArrayList<>();
     private AsyncTaskListenerGetWaypoints callback;
@@ -111,11 +116,17 @@ public class GoogleAddressTask extends AsyncTask<String[], Void, List<ShapePenha
 
 
     @Override
-    protected List<ShapePenha> doInBackground(String[]... strings) {
+    protected List<ShapePenha> doInBackground(String... strings) {
 
         try {
 
-            HttpGet httpget = new HttpGet("http://apibus.smed.xyz/api/shapes/55264");
+            if(strings[0] == URL_PENHA){
+                sentido = 1;
+            }else if(strings[0] == URL_VOLTA_PENHA){
+                sentido = 2;
+            }
+
+            HttpGet httpget = new HttpGet(strings[0]);
             httpget.addHeader("Authorization", "Basic " + Base64.encodeToString((USER_AUTH + ":" + PASS_AUTH).getBytes(), Base64.NO_WRAP));
             DefaultHttpClient client = new DefaultHttpClient();
             HttpResponse response;
@@ -159,7 +170,7 @@ public class GoogleAddressTask extends AsyncTask<String[], Void, List<ShapePenha
                 lstLagLong.add(latLng);
             }
 
-            callback.onTaskCompleteGetWaypoints(lstLagLong);
+            callback.onTaskCompleteGetWaypoints(lstLagLong, sentido);
         } catch (final IllegalArgumentException e) {
         } catch (final Exception e) {
         } finally {

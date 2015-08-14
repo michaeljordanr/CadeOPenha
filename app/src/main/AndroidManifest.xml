@@ -42,11 +42,12 @@
             android:value="@integer/google_play_services_version" />
         <meta-data
             android:name="com.google.android.maps.v2.API_KEY"
-            android:value="AIzaSyB5DHvFn8-1MsOyAhH_w05o0vPAUk8AqPQ" />
+            android:value="@string/google_maps_key" />
 
         <receiver
             android:name=".receiver.RadarPenhaReceiver"
-            android:exported="false">
+            android:exported="false"
+            android:enabled="false">
         </receiver>
     </application>
 
