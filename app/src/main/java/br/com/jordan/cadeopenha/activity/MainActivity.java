@@ -174,11 +174,17 @@ public class MainActivity extends Activity implements OnMapReadyCallback, AsyncT
         //}
     }
 
+    private void setUpMap() {
+        map.setMyLocationEnabled(true);
+        map.setOnMyLocationChangeListener(this);
+        map.getUiSettings().setMyLocationButtonEnabled(false);
+    }
+
     @Override
     public void onMapReady(GoogleMap googleMap) {
         map = googleMap;
         map.getUiSettings().setZoomControlsEnabled(true);
-        map.setOnMyLocationChangeListener(this);
+        setUpMap();
 
         CameraPosition cameraPos = new CameraPosition.Builder().target(latLngRotaPenha).zoom(11).build();
         map.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPos));
@@ -296,7 +302,7 @@ public class MainActivity extends Activity implements OnMapReadyCallback, AsyncT
             Toast.makeText(this, "Penhas localizados :)", Toast.LENGTH_LONG).show();
             markerPenhasOnMap(penhasLocalizados);
             markerPenhasOffOnMap(penhasOff);
-            setMarkerLocale();
+            //setMarkerLocale();
         } else {
             Toast.makeText(this, "Nenhum penha encontrado :(", Toast.LENGTH_LONG).show();
         }
@@ -318,10 +324,10 @@ public class MainActivity extends Activity implements OnMapReadyCallback, AsyncT
 
             //Toast.makeText(this, String.format(locale, "Penha mais proximo esta num raio de: %.2f metros de você", (distancia)), Toast.LENGTH_LONG).show();
 
-            optionsm = new MarkerOptions();
-            optionsm.position(latLngCurrentLocation).title(getString(R.string.you_are_here))
-                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.rsz_cool))
-                    .draggable(false);
+            //optionsm = new MarkerOptions();
+            //optionsm.position(latLngCurrentLocation).title(getString(R.string.you_are_here))
+            //        .icon(BitmapDescriptorFactory.fromResource(R.drawable.rsz_cool))
+            //        .draggable(false);
 
             if (penhaMaisProximo > 0) {
 
@@ -333,7 +339,7 @@ public class MainActivity extends Activity implements OnMapReadyCallback, AsyncT
             }
 
             markerLocale = map.addMarker(optionsm);
-            drawCircle(latLngCurrentLocation);
+            //drawCircle(latLngCurrentLocation);
         }
     }
 
@@ -374,36 +380,45 @@ public class MainActivity extends Activity implements OnMapReadyCallback, AsyncT
 
     @Override
     public void onMyLocationChange(Location location) {
-        gps = new GPSTracker(this);
-        if (gps.canGetLocation()) {
-            markerLocale.remove();
-            double latitude = gps.getLatitude();
-            double longitude = gps.getLongitude();
+        double latOld = 0;
+        double longOld = 0;
+        if(latLngCurrentLocation != null) {
+            latOld = latLngCurrentLocation.latitude;
+            longOld = latLngCurrentLocation.longitude;
+        }
 
-            latLngCurrentLocation = new LatLng(latitude, longitude);
+        double latitude = location.getLatitude();
+        double longitude = location.getLongitude();
 
-            optionsm = new MarkerOptions();
-            optionsm.position(latLngCurrentLocation).title(getString(R.string.you_are_here))
-                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.rsz_cool))
-                    .draggable(false);
+        latLngCurrentLocation = new LatLng(latitude, longitude);
 
-        } else {
-            Toast.makeText(this, getString(R.string.gps_off), Toast.LENGTH_LONG).show();
+        if(latitude != latOld && longitude != longOld) {
+            if(markerLocale != null)
+                markerLocale.remove();
+
+            //optionsm = new MarkerOptions();
+            //optionsm.position(latLngCurrentLocation).title(getString(R.string.you_are_here))
+            //        .icon(BitmapDescriptorFactory.fromResource(R.drawable.rsz_cool))
+            //        .draggable(false);
+
+            //markerLocale = map.addMarker(optionsm);
+            //drawCircle(latLngCurrentLocation);
         }
     }
 
 
     public void refreshLocation(View view) {
-
-        gps = new GPSTracker(this);
-        if (gps.canGetLocation()) {
+        if(latLngCurrentLocation == null) {
+            gps = new GPSTracker(this);
             latLngCurrentLocation = new LatLng(gps.getLatitude(), gps.getLongitude());
+        }
 
+        if (gps.canGetLocation() && latLngCurrentLocation != null) {
             CameraPosition cameraPos = new CameraPosition.Builder().target(latLngCurrentLocation).zoom(map.getCameraPosition().zoom).build();
             CameraUpdate update = CameraUpdateFactory.newCameraPosition(cameraPos);
             map.animateCamera(update);
 
-            setMarkerLocale();
+            //setMarkerLocale();
         } else {
             Toast.makeText(this, getString(R.string.gps_off), Toast.LENGTH_SHORT).show();
         }
