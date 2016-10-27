@@ -1,11 +1,9 @@
-package br.com.jordan.cadeopenha.interfaces;
+package br.com.jordan.cadeopenha2.interfaces;
 
-
-import com.google.android.gms.maps.model.LatLng;
 
 import java.util.List;
 
-import br.com.jordan.cadeopenha.model.Penhas;
+import br.com.jordan.cadeopenha2.model.Penhas;
 
 public interface AsyncTaskListenerBuscarPenhas {
     public void onTaskCompleteAutenticarAPI(List<Penhas> result);

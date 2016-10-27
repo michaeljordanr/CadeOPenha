@@ -1,4 +1,4 @@
-package br.com.jordan.cadeopenha.util;
+package br.com.jordan.cadeopenha2.util;
 
 import android.location.Location;
 
@@ -10,9 +10,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import br.com.jordan.cadeopenha.model.Penha;
-import br.com.jordan.cadeopenha.model.PenhaMaisProximo;
-import br.com.jordan.cadeopenha.model.Penhas;
+import br.com.jordan.cadeopenha2.model.Penha;
+import br.com.jordan.cadeopenha2.model.PenhaMaisProximo;
+import br.com.jordan.cadeopenha2.model.Penhas;
 
 public class PenhaUtil {
 

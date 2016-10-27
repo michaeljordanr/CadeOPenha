@@ -1,4 +1,4 @@
-package br.com.jordan.cadeopenha.task;
+package br.com.jordan.cadeopenha2.task;
 
 import android.app.ProgressDialog;
 import android.content.Context;
@@ -21,18 +21,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 import br.com.jordan.cadeopenha.R;
-import br.com.jordan.cadeopenha.interfaces.AsyncTaskListenerBuscarPenhas;
-import br.com.jordan.cadeopenha.model.Penhas;
+import br.com.jordan.cadeopenha2.interfaces.AsyncTaskListenerBuscarPenhas;
+import br.com.jordan.cadeopenha2.model.Penhas;
 
-/**
- * Created by techresult on 03/08/2015.
- */
-public class BuscarPenhasFromRadarTask  extends AsyncTask<LatLng, Void, List<Penhas>> {
+public class BuscarPenhasTask extends AsyncTask<LatLng, Void, List<Penhas>> {
+
     private static final String URL_Auth = "http://api.olhovivo.sptrans.com.br/v0/Login/Autenticar?token=";
     private static final String URL_SearchPenhas = "http://api.olhovivo.sptrans.com.br/v0/Posicao?codigoLinha=33000";
     private static final String URL_SearchPenhasOff = "http://api.olhovivo.sptrans.com.br/v0/Posicao?codigoLinha=232";
 
     private String responseStr;
+    private ProgressDialog progress;
 
     private AsyncTaskListenerBuscarPenhas callback;
     private Context context;
@@ -41,9 +40,19 @@ public class BuscarPenhasFromRadarTask  extends AsyncTask<LatLng, Void, List<Pen
     private Penhas resultPenhasOff;
     private List<Penhas> result;
 
-    public BuscarPenhasFromRadarTask(Context context, AsyncTaskListenerBuscarPenhas callback) {
+    public BuscarPenhasTask(Context context, AsyncTaskListenerBuscarPenhas callback) {
         this.context = context;
         this.callback = callback;
+    }
+
+    @Override
+    protected void onPreExecute() {
+        super.onPreExecute();
+        progress = new ProgressDialog(context);
+        progress.setMessage(context.getString(R.string.oh_wait));
+        progress.setIndeterminate(true);
+        progress.setCancelable(false);
+        progress.show();
     }
 
     @Override
@@ -87,12 +96,17 @@ public class BuscarPenhasFromRadarTask  extends AsyncTask<LatLng, Void, List<Pen
     @Override
     protected void onPostExecute(List<Penhas> penhas) {
         try {
+            if (null != progress && progress.isShowing()) {
+                progress.dismiss();
+            }
+
             callback.onTaskCompleteAutenticarAPI(penhas);
         } catch (final IllegalArgumentException e) {
             e.printStackTrace();
         } catch (final Exception e) {
             e.printStackTrace();
         } finally {
+            this.progress = null;
         }
     }
 }

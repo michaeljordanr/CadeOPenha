@@ -20,19 +20,8 @@
  * THE SOFTWARE.
  */
 
-package br.com.jordan.cadeopenha.util;
+package br.com.jordan.cadeopenha2.util;
 
-
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Canvas;
-import android.graphics.Paint;
-import android.graphics.Point;
-
-import com.google.android.gms.maps.Projection;
-import com.google.android.gms.maps.model.LatLng;
-
-import br.com.jordan.cadeopenha.R;
 
 public class BitmapRequest {
 

@@ -20,10 +20,9 @@
  * THE SOFTWARE.
  */
 
-package br.com.jordan.cadeopenha.util;
+package br.com.jordan.cadeopenha2.util;
 
 import android.annotation.SuppressLint;
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Handler;
@@ -60,8 +59,6 @@ import java.util.List;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-
-import br.com.jordan.cadeopenha.R;
 
 @SuppressLint("NewApi")
 public class GoogleDirection {

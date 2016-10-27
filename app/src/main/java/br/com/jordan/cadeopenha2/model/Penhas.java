@@ -1,12 +1,10 @@
-package br.com.jordan.cadeopenha.model;
+package br.com.jordan.cadeopenha2.model;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
 import java.io.Serializable;
 import java.util.List;
-
-import br.com.jordan.cadeopenha.task.GoogleAddressTask;
 
 public class Penhas implements Serializable {
 

@@ -20,7 +20,7 @@
  * THE SOFTWARE.
  */
 
-package br.com.jordan.cadeopenha.util;
+package br.com.jordan.cadeopenha2.util;
 
 import android.annotation.SuppressLint;
 import android.content.ContentValues;

@@ -1,4 +1,4 @@
-package br.com.jordan.cadeopenha.activity;
+package br.com.jordan.cadeopenha2.activity;
 
 import android.app.Activity;
 import android.app.AlarmManager;
@@ -36,17 +36,17 @@ import java.util.List;
 import java.util.Locale;
 
 import br.com.jordan.cadeopenha.R;
-import br.com.jordan.cadeopenha.interfaces.AsyncTaskListenerBuscarPenhas;
-import br.com.jordan.cadeopenha.interfaces.AsyncTaskListenerGetWaypoints;
-import br.com.jordan.cadeopenha.model.Penha;
-import br.com.jordan.cadeopenha.model.PenhaMaisProximo;
-import br.com.jordan.cadeopenha.model.Penhas;
-import br.com.jordan.cadeopenha.receiver.RadarPenhaReceiver;
-import br.com.jordan.cadeopenha.task.BuscarPenhasTask;
-import br.com.jordan.cadeopenha.task.GoogleAddressTask;
-import br.com.jordan.cadeopenha.util.GPSTracker;
-import br.com.jordan.cadeopenha.util.GoogleDirection;
-import br.com.jordan.cadeopenha.util.PenhaUtil;
+import br.com.jordan.cadeopenha2.interfaces.AsyncTaskListenerBuscarPenhas;
+import br.com.jordan.cadeopenha2.interfaces.AsyncTaskListenerGetWaypoints;
+import br.com.jordan.cadeopenha2.model.Penha;
+import br.com.jordan.cadeopenha2.model.PenhaMaisProximo;
+import br.com.jordan.cadeopenha2.model.Penhas;
+import br.com.jordan.cadeopenha2.receiver.RadarPenhaReceiver;
+import br.com.jordan.cadeopenha2.task.BuscarPenhasTask;
+import br.com.jordan.cadeopenha2.task.GoogleAddressTask;
+import br.com.jordan.cadeopenha2.util.GPSTracker;
+import br.com.jordan.cadeopenha2.util.GoogleDirection;
+import br.com.jordan.cadeopenha2.util.PenhaUtil;
 
 
 public class MainActivity extends Activity implements OnMapReadyCallback, AsyncTaskListenerBuscarPenhas, AsyncTaskListenerGetWaypoints, GoogleMap.OnMarkerClickListener, GoogleMap.OnMyLocationChangeListener {

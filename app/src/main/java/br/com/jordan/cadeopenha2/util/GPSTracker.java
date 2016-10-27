@@ -1,4 +1,4 @@
-package br.com.jordan.cadeopenha.util;
+package br.com.jordan.cadeopenha2.util;
 import android.app.AlertDialog;
 import android.app.Service;
 import android.content.Context;

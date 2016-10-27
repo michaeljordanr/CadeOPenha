@@ -20,7 +20,7 @@
  * THE SOFTWARE.
  */
 
-package br.com.jordan.cadeopenha.util;
+package br.com.jordan.cadeopenha2.util;
 
 public class PlaceType {
 	public final static String ACCOUNTING = "accounting";

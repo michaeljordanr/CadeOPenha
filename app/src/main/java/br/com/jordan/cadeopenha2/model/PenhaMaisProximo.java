@@ -1,4 +1,4 @@
-package br.com.jordan.cadeopenha.model;
+package br.com.jordan.cadeopenha2.model;
 
 import com.google.android.gms.maps.model.LatLng;
 

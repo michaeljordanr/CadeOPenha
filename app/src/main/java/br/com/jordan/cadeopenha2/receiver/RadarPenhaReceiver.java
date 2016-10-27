@@ -1,4 +1,4 @@
-package br.com.jordan.cadeopenha.receiver;
+package br.com.jordan.cadeopenha2.receiver;
 
 import android.app.Notification;
 import android.app.NotificationManager;
@@ -15,15 +15,14 @@ import java.util.List;
 import java.util.Locale;
 
 import br.com.jordan.cadeopenha.R;
-import br.com.jordan.cadeopenha.activity.MainActivity;
-import br.com.jordan.cadeopenha.activity.Splash;
-import br.com.jordan.cadeopenha.interfaces.AsyncTaskListenerBuscarPenhas;
-import br.com.jordan.cadeopenha.model.PenhaMaisProximo;
-import br.com.jordan.cadeopenha.model.Penhas;
-import br.com.jordan.cadeopenha.task.BuscarPenhasFromRadarTask;
-import br.com.jordan.cadeopenha.task.BuscarPenhasTask;
-import br.com.jordan.cadeopenha.util.GPSTracker;
-import br.com.jordan.cadeopenha.util.PenhaUtil;
+import br.com.jordan.cadeopenha2.activity.MainActivity;
+import br.com.jordan.cadeopenha2.activity.Splash;
+import br.com.jordan.cadeopenha2.interfaces.AsyncTaskListenerBuscarPenhas;
+import br.com.jordan.cadeopenha2.model.PenhaMaisProximo;
+import br.com.jordan.cadeopenha2.model.Penhas;
+import br.com.jordan.cadeopenha2.task.BuscarPenhasFromRadarTask;
+import br.com.jordan.cadeopenha2.util.GPSTracker;
+import br.com.jordan.cadeopenha2.util.PenhaUtil;
 
 public class RadarPenhaReceiver extends BroadcastReceiver implements AsyncTaskListenerBuscarPenhas {
     PenhaUtil penhaUtil = new PenhaUtil();
