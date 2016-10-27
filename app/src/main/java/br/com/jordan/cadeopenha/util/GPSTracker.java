@@ -12,6 +12,8 @@ import android.os.IBinder;
 import android.provider.Settings;
 import android.util.Log;
 
+import br.com.jordan.cadeopenha.R;
+
 public class GPSTracker extends Service implements LocationListener {
 
     private final Context mContext;
@@ -154,13 +156,13 @@ public class GPSTracker extends Service implements LocationListener {
         alertDialog.setCancelable(false);
 
         // Setting Dialog Title
-        alertDialog.setTitle("Aviso");
+        alertDialog.setTitle(R.string.warning);
 
         // Setting Dialog Message
-        alertDialog.setMessage("O GPS não está habilitado. Você quer ir para o menu de configurações?");
+        alertDialog.setMessage(R.string.gps_disabled);
 
         // On pressing Settings button
-        alertDialog.setPositiveButton("Configurações", new DialogInterface.OnClickListener() {
+        alertDialog.setPositiveButton(R.string.settings, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog,int which) {
                 Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
                 mContext.startActivity(intent);
@@ -168,7 +170,7 @@ public class GPSTracker extends Service implements LocationListener {
         });
 
         // on pressing cancel button
-        alertDialog.setNegativeButton("Cancelar", new DialogInterface.OnClickListener() {
+        alertDialog.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int which) {
                 dialog.cancel();
             }

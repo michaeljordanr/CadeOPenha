@@ -19,6 +19,8 @@
     <string name="settings">Configurações</string>
     <string name="cancel">Cancelar</string>
     <string name="gps_off">GPS desligado</string>
+    <string name="warning">Aviso</string>
+    <string name="gps_disabled">"O GPS não está habilitado. Você quer ir para o menu de configurações?"</string>
 
     <string-array name="waypoints">
         <item>Av. Lins De Vasconcelos, 3139</item>

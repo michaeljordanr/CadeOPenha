@@ -117,11 +117,11 @@ public class MainActivity extends Activity implements OnMapReadyCallback, AsyncT
         mapFragment.getMapAsync(this);
         mapFragment.getView().setVisibility(View.VISIBLE);
 
-        GoogleAddressTask googleAddressTask = new GoogleAddressTask(this, this);
+        /*GoogleAddressTask googleAddressTask = new GoogleAddressTask(this, this);
         googleAddressTask.execute(URL_PENHA);
 
         googleAddressTask = new GoogleAddressTask(this, this);
-        googleAddressTask.execute(URL_VOLTA_PENHA);
+        googleAddressTask.execute(URL_VOLTA_PENHA);*/
 
         task = new BuscarPenhasTask(this, this);
         task.execute();
@@ -198,7 +198,7 @@ public class MainActivity extends Activity implements OnMapReadyCallback, AsyncT
             latLngCurrentLocation = new LatLng(latitude, longitude);
 
         } else {
-            Toast.makeText(this, "GPS desligado", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, R.string.gps_off, Toast.LENGTH_LONG).show();
         }
 
         map.setInfoWindowAdapter(new GoogleMap.InfoWindowAdapter() {
@@ -425,14 +425,14 @@ public class MainActivity extends Activity implements OnMapReadyCallback, AsyncT
     }
 
     public void refreshPenhaOnMap(View view) {
-        if (!FLAG_ROTA_DESENHADA) {
+        /*if (!FLAG_ROTA_DESENHADA) {
             GoogleAddressTask googleAddressTask = new GoogleAddressTask(this, this);
             googleAddressTask.execute();
         }
 
         for (Marker m : markersPenha) {
             m.remove();
-        }
+        }*/
 
         task = new BuscarPenhasTask(this, this);
         task.execute();
