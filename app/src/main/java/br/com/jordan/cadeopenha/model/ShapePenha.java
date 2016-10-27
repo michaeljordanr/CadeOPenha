@@ -28,7 +28,7 @@ public class ShapePenha implements Serializable {
 
     @SerializedName("shape_dist_traveled")
     @Expose
-    public int distTraveled;
+    public double distTraveled;
 
     public int getId() {
         return id;
@@ -62,11 +62,11 @@ public class ShapePenha implements Serializable {
         this.sequence = sequence;
     }
 
-    public int getDistTraveled() {
+    public double getDistTraveled() {
         return distTraveled;
     }
 
-    public void setDistTraveled(int distTraveled) {
+    public void setDistTraveled(double distTraveled) {
         this.distTraveled = distTraveled;
     }
 }

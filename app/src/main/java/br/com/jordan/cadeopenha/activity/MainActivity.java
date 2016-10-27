@@ -43,6 +43,7 @@ import br.com.jordan.cadeopenha.model.PenhaMaisProximo;
 import br.com.jordan.cadeopenha.model.Penhas;
 import br.com.jordan.cadeopenha.receiver.RadarPenhaReceiver;
 import br.com.jordan.cadeopenha.task.BuscarPenhasTask;
+import br.com.jordan.cadeopenha.task.GoogleAddressTask;
 import br.com.jordan.cadeopenha.util.GPSTracker;
 import br.com.jordan.cadeopenha.util.GoogleDirection;
 import br.com.jordan.cadeopenha.util.PenhaUtil;
@@ -105,11 +106,11 @@ public class MainActivity extends Activity implements OnMapReadyCallback, AsyncT
         mapFragment.getMapAsync(this);
         mapFragment.getView().setVisibility(View.VISIBLE);
 
-        /*GoogleAddressTask googleAddressTask = new GoogleAddressTask(this, this);
+        GoogleAddressTask googleAddressTask = new GoogleAddressTask(this, this);
         googleAddressTask.execute(URL_PENHA);
 
         googleAddressTask = new GoogleAddressTask(this, this);
-        googleAddressTask.execute(URL_VOLTA_PENHA);*/
+        googleAddressTask.execute(URL_VOLTA_PENHA);
 
         task = new BuscarPenhasTask(this, this);
         task.execute();

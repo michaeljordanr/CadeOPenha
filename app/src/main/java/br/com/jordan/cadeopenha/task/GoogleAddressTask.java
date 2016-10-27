@@ -2,29 +2,12 @@ package br.com.jordan.cadeopenha.task;
 
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.res.AssetManager;
 import android.os.AsyncTask;
-import android.util.Base64;
-import android.util.Log;
 
 import com.google.android.gms.maps.model.LatLng;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.auth.AuthScope;
-import org.apache.http.auth.UsernamePasswordCredentials;
-import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.protocol.BasicHttpContext;
-import org.apache.http.protocol.HttpContext;
-import org.apache.http.util.EntityUtils;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -33,9 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-import br.com.jordan.cadeopenha.R;
 import br.com.jordan.cadeopenha.interfaces.AsyncTaskListenerGetWaypoints;
-import br.com.jordan.cadeopenha.model.Penhas;
 import br.com.jordan.cadeopenha.model.ShapePenha;
 
 
@@ -126,21 +107,11 @@ public class GoogleAddressTask extends AsyncTask<String, Void, List<ShapePenha>>
                 sentido = 2;
             }
 
-            HttpGet httpget = new HttpGet(strings[0]);
-            httpget.addHeader("Authorization", "Basic " + Base64.encodeToString((USER_AUTH + ":" + PASS_AUTH).getBytes(), Base64.NO_WRAP));
-            DefaultHttpClient client = new DefaultHttpClient();
-            HttpResponse response;
-
-            /* authentication */
-            UsernamePasswordCredentials credentials = new UsernamePasswordCredentials(
-                    USER_AUTH + ":" + PASS_AUTH);
-            client.getCredentialsProvider().setCredentials(
-                    new AuthScope(AuthScope.ANY_HOST, AuthScope.ANY_PORT),
-                    credentials);
-
-
-            response = client.execute(httpget);
-            responseStr = EntityUtils.toString(response.getEntity());
+            if(sentido == 1){
+                responseStr = loadJSONFromAsset("shapes_penha_ida.json");
+            }else if(sentido == 2){
+                responseStr = loadJSONFromAsset("shapes_penha_volta.json");
+            }
 
             Type type = new TypeToken<List<ShapePenha>>() {
             }.getType();
@@ -148,9 +119,7 @@ public class GoogleAddressTask extends AsyncTask<String, Void, List<ShapePenha>>
 
             return resultShapes;
 
-        } catch (ClientProtocolException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
 
         }
@@ -176,6 +145,32 @@ public class GoogleAddressTask extends AsyncTask<String, Void, List<ShapePenha>>
         } finally {
             this.progress = null;
         }
+    }
+
+    public String loadJSONFromAsset(String file) {
+        String json = null;
+        try {
+
+            AssetManager mngr = context.getAssets();
+            InputStream is = mngr.open(file);
+
+            int size = is.available();
+
+            byte[] buffer = new byte[size];
+
+            is.read(buffer);
+
+            is.close();
+
+            json = new String(buffer, "UTF-8");
+
+
+        } catch (IOException ex) {
+            ex.printStackTrace();
+            return null;
+        }
+        return json;
+
     }
 
 //    public List<LatLng> getListLatLong(List<JSONObject> lstJsonObject) {
