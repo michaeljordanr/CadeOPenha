@@ -5,7 +5,6 @@ import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.graphics.Color;
 import android.location.Location;
 import android.os.Build;
@@ -14,13 +13,9 @@ import android.util.TypedValue;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.gms.ads.AdRequest;
-import com.google.android.gms.ads.AdSize;
-import com.google.android.gms.ads.AdView;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -36,15 +31,9 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 
-import org.w3c.dom.Text;
-
-import java.text.MessageFormat;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 
 import br.com.jordan.cadeopenha.R;
 import br.com.jordan.cadeopenha.interfaces.AsyncTaskListenerBuscarPenhas;
@@ -54,7 +43,6 @@ import br.com.jordan.cadeopenha.model.PenhaMaisProximo;
 import br.com.jordan.cadeopenha.model.Penhas;
 import br.com.jordan.cadeopenha.receiver.RadarPenhaReceiver;
 import br.com.jordan.cadeopenha.task.BuscarPenhasTask;
-import br.com.jordan.cadeopenha.task.GoogleAddressTask;
 import br.com.jordan.cadeopenha.util.GPSTracker;
 import br.com.jordan.cadeopenha.util.GoogleDirection;
 import br.com.jordan.cadeopenha.util.PenhaUtil;
@@ -275,7 +263,7 @@ public class MainActivity extends Activity implements OnMapReadyCallback, AsyncT
             LatLng latLng = new LatLng(penha.getLatitude(), penha.getLongitude());
 
             optionsm.position(latLng).title("Penha voltando " + penha.getNumero())
-                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_penha_off))
+                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_penha0))
                     .draggable(false);
 
             markersPenha.add(map.addMarker(optionsm));
@@ -339,7 +327,7 @@ public class MainActivity extends Activity implements OnMapReadyCallback, AsyncT
             }
 
             markerLocale = map.addMarker(optionsm);
-            //drawCircle(latLngCurrentLocation);
+            drawCircle(latLngCurrentLocation);
         }
     }
 
@@ -402,7 +390,7 @@ public class MainActivity extends Activity implements OnMapReadyCallback, AsyncT
             //        .draggable(false);
 
             //markerLocale = map.addMarker(optionsm);
-            //drawCircle(latLngCurrentLocation);
+            drawCircle(latLngCurrentLocation);
         }
     }
 
