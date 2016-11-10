@@ -1,4 +1,4 @@
-package br.com.jordan.cadeopenha2.activity;
+package br.com.jordan.cadeopenha.activity;
 
 import android.app.Activity;
 import android.content.Intent;

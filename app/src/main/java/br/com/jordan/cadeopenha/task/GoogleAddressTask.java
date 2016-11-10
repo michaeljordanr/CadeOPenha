@@ -1,4 +1,4 @@
-package br.com.jordan.cadeopenha2.task;
+package br.com.jordan.cadeopenha.task;
 
 import android.app.ProgressDialog;
 import android.content.Context;
@@ -16,8 +16,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-import br.com.jordan.cadeopenha2.interfaces.AsyncTaskListenerGetWaypoints;
-import br.com.jordan.cadeopenha2.model.ShapePenha;
+import br.com.jordan.cadeopenha.interfaces.AsyncTaskListenerGetWaypoints;
+import br.com.jordan.cadeopenha.model.ShapePenha;
 
 
 public class GoogleAddressTask extends AsyncTask<String, Void, List<ShapePenha>> {

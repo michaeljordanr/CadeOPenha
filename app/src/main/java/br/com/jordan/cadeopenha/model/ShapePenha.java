@@ -1,4 +1,4 @@
-package br.com.jordan.cadeopenha2.model;
+package br.com.jordan.cadeopenha.model;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;

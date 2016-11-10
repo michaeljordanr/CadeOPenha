@@ -1,4 +1,4 @@
-package br.com.jordan.cadeopenha2.task;
+package br.com.jordan.cadeopenha.task;
 
 import android.content.Context;
 import android.os.AsyncTask;
@@ -20,8 +20,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import br.com.jordan.cadeopenha.R;
-import br.com.jordan.cadeopenha2.interfaces.AsyncTaskListenerBuscarPenhas;
-import br.com.jordan.cadeopenha2.model.Penhas;
+import br.com.jordan.cadeopenha.interfaces.AsyncTaskListenerBuscarPenhas;
+import br.com.jordan.cadeopenha.model.Penhas;
 
 /**
  * Created by techresult on 03/08/2015.
