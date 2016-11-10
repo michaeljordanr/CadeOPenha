@@ -3,6 +3,7 @@ package br.com.jordan.cadeopenha.task;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.os.AsyncTask;
+import android.text.TextUtils;
 import android.util.Base64;
 
 import com.google.android.gms.maps.model.LatLng;
@@ -85,7 +86,7 @@ public class BuscarPenhasTask extends AsyncTask<LatLng, Void, List<Penhas>> {
 
             if(retornoAuth.getStatusCode() == HttpURLConnection.HTTP_OK) {
                 if (retornoAuth.getResponse().equals("true")) {
-                    retornoGet = request("http://api.olhovivo.sptrans.com.br/v0/Posicao?codigoLinha=33000", Constantes.REQUEST_METHOD_GET, null, null, null, null, false);
+                    retornoGet = request(URL_SearchPenhas, Constantes.REQUEST_METHOD_GET, null, null, null, null, false);
                     responseStr = retornoGet.getResponse();
 
                     Type type = new TypeToken<Penhas>() {
@@ -149,6 +150,10 @@ public class BuscarPenhasTask extends AsyncTask<LatLng, Void, List<Penhas>> {
             connection.setRequestMethod(method);
             connection.setRequestProperty(Constantes.WS_ACCEPT, Constantes.WS_APPLICATION_JSON);
             connection.setRequestProperty(Constantes.WS_CONTENT_TYPE, Constantes.WS_APPLICATION_JSON);
+            if (msCookieManager.getCookieStore().getCookies().size() > 0) {
+                connection.setRequestProperty("Cookie",
+                        TextUtils.join(";",  msCookieManager.getCookieStore().getCookies()));
+            }
 
 
 

@@ -2,11 +2,13 @@ package br.com.jordan.cadeopenha.activity;
 
 import android.app.Activity;
 import android.app.AlarmManager;
+import android.app.Notification;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.location.Location;
+import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.TypedValue;
@@ -56,6 +58,7 @@ public class MainActivity extends Activity implements OnMapReadyCallback, AsyncT
 
     private GoogleMap map;
     private GPSTracker gps;
+    private LocationManager locationManager;
     //private AdView mAdView;
     private GoogleDirection objGoogleDirection;
     private PenhaUtil penhaUtil = new PenhaUtil();
@@ -105,6 +108,8 @@ public class MainActivity extends Activity implements OnMapReadyCallback, AsyncT
         mapFragment = (MapFragment) getFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
         mapFragment.getView().setVisibility(View.VISIBLE);
+
+        locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
 
         GoogleAddressTask googleAddressTask = new GoogleAddressTask(this, this);
         googleAddressTask.execute(URL_PENHA);
@@ -190,6 +195,14 @@ public class MainActivity extends Activity implements OnMapReadyCallback, AsyncT
             Toast.makeText(this, R.string.gps_off, Toast.LENGTH_LONG).show();
         }
 
+        Intent intent = new Intent(this, NotificationActivity.class);
+        intent.putExtra("text", "funcionou");
+        PendingIntent pendingIntent = PendingIntent.getActivity(getBaseContext(), 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        locationManager.addProximityAlert(-23.544374, -46.643828, 1000, -1, pendingIntent);
+
+        Toast.makeText(getBaseContext(), "Proximity Alert is added", Toast.LENGTH_SHORT).show();
+
         map.setInfoWindowAdapter(new GoogleMap.InfoWindowAdapter() {
             @Override
             public View getInfoWindow(Marker marker) {
@@ -246,7 +259,7 @@ public class MainActivity extends Activity implements OnMapReadyCallback, AsyncT
 
             optionsm = new MarkerOptions();
 
-            LatLng latLng = new LatLng(penha.getLatitude(), penha.getLongitude());
+            LatLng latLng = new LatLng(-23.544374, -46.643828);
 
             optionsm.position(latLng).title("Penha " + penha.getNumero())
                     .icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_penha))
@@ -254,6 +267,12 @@ public class MainActivity extends Activity implements OnMapReadyCallback, AsyncT
 
             markersPenha.add(map.addMarker(optionsm));
         }
+
+
+        //teste
+        map.addMarker(new MarkerOptions().position(new LatLng(-23.544374, -46.643828))
+                .icon(BitmapDescriptorFactory.defaultMarker(
+                        BitmapDescriptorFactory.HUE_BLUE)));
     }
 
     private void markerPenhasOffOnMap(Penhas penhas) {
