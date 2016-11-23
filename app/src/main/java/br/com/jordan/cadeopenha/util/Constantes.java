@@ -57,4 +57,5 @@ public class Constantes {
     public static final String URL = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?";
 
     public static final String URL_REGISTER_DEVICE_WS = "http://www.alarmap.com.br:9080/tcc-notification/rest/service/register";
+    public static final String ACTION_PROXIMITY_ALERT = "br.com.jordan.cadeopenha.ACTION_PROXIMITY_ALERT";
 }

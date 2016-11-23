@@ -2,10 +2,10 @@ package br.com.jordan.cadeopenha.activity;
 
 import android.app.Activity;
 import android.app.AlarmManager;
-import android.app.Notification;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.graphics.Color;
 import android.location.Location;
 import android.location.LocationManager;
@@ -43,9 +43,11 @@ import br.com.jordan.cadeopenha.interfaces.AsyncTaskListenerGetWaypoints;
 import br.com.jordan.cadeopenha.model.Penha;
 import br.com.jordan.cadeopenha.model.PenhaMaisProximo;
 import br.com.jordan.cadeopenha.model.Penhas;
+import br.com.jordan.cadeopenha.receiver.PenhaProximityReceiver;
 import br.com.jordan.cadeopenha.receiver.RadarPenhaReceiver;
 import br.com.jordan.cadeopenha.task.BuscarPenhasTask;
 import br.com.jordan.cadeopenha.task.GoogleAddressTask;
+import br.com.jordan.cadeopenha.util.Constantes;
 import br.com.jordan.cadeopenha.util.GPSTracker;
 import br.com.jordan.cadeopenha.util.GoogleDirection;
 import br.com.jordan.cadeopenha.util.PenhaUtil;
@@ -82,9 +84,9 @@ public class MainActivity extends Activity implements OnMapReadyCallback, AsyncT
     LatLng latLngCurrentLocation;
 
     PendingIntent pi;
-    private boolean FLAG_PENHA_RADAR = true;
+    private boolean FLAG_PENHA_RADAR = false;
 
-    private RadarPenhaReceiver receiver;
+    private PenhaProximityReceiver receiver;
 
     private static String URL_PENHA = "http://apibus.smed.xyz/api/shapes/55264";
     private static String URL_VOLTA_PENHA = "http://apibus.smed.xyz/api/shapes/58713";
@@ -94,22 +96,18 @@ public class MainActivity extends Activity implements OnMapReadyCallback, AsyncT
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        Intent alarmIntent = new Intent(this, RadarPenhaReceiver.class);
-        pi = PendingIntent.getBroadcast(this, 0, alarmIntent, 0);
-
         setStatusBarColor(findViewById(R.id.statusBarBackground), getResources().getColor(android.R.color.background_dark));
 
         objGoogleDirection = new GoogleDirection(this);
-
-        //mAdView = (AdView) findViewById(R.id.adView);
-        //AdRequest adRequest = new AdRequest.Builder().build();
-        //mAdView.loadAd(adRequest);
 
         mapFragment = (MapFragment) getFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
         mapFragment.getView().setVisibility(View.VISIBLE);
 
+        Intent alertIntent = new Intent(this, PenhaProximityReceiver.class);
+        pi = PendingIntent.getBroadcast(this, 0, alertIntent, 0);
         locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+        locationManager.addProximityAlert(-23.544374, -46.643828, 1000, -1, pi);
 
         GoogleAddressTask googleAddressTask = new GoogleAddressTask(this, this);
         googleAddressTask.execute(URL_PENHA);
@@ -123,25 +121,17 @@ public class MainActivity extends Activity implements OnMapReadyCallback, AsyncT
 
     public void onRadar(View view) {
         if (!FLAG_PENHA_RADAR) {
-            //receiver = new RadarPenhaReceiver();
-            //IntentFilter intentFilter = new IntentFilter();
-            //intentFilter.addAction("br.com.jordan.cadeopenha.LIGA_RADAR");
-            //registerReceiver(receiver, intentFilter);
+            receiver = new PenhaProximityReceiver();
+            IntentFilter intentFilter = new IntentFilter(Constantes.ACTION_PROXIMITY_ALERT);
+            registerReceiver(receiver, intentFilter);
 
-            //Intent intent = new Intent("br.com.jordan.cadeopenha.LIGA_RADAR");
-            //sendBroadcast(intent);
-
-            AlarmManager manager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-            int interval = 10000;
-
-            manager.setInexactRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), interval, pi);
             Toast.makeText(this, "Radar de Penha ligado!", Toast.LENGTH_SHORT).show();
             FLAG_PENHA_RADAR = true;
         }else{
-            //unregisterReceiver(receiver);
+            unregisterReceiver(receiver);
 
-            AlarmManager manager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-            manager.cancel(pi);
+            //AlarmManager manager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+            //manager.cancel(pi);
             Toast.makeText(this, "Radar de Penha desligado!", Toast.LENGTH_SHORT).show();
             FLAG_PENHA_RADAR = false;
         }
@@ -195,13 +185,7 @@ public class MainActivity extends Activity implements OnMapReadyCallback, AsyncT
             Toast.makeText(this, R.string.gps_off, Toast.LENGTH_LONG).show();
         }
 
-        Intent intent = new Intent(this, NotificationActivity.class);
-        intent.putExtra("text", "funcionou");
-        PendingIntent pendingIntent = PendingIntent.getActivity(getBaseContext(), 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-
-        locationManager.addProximityAlert(-23.544374, -46.643828, 1000, -1, pendingIntent);
-
-        Toast.makeText(getBaseContext(), "Proximity Alert is added", Toast.LENGTH_SHORT).show();
+        //Toast.makeText(getBaseContext(), "Proximity Alert is added", Toast.LENGTH_SHORT).show();
 
         map.setInfoWindowAdapter(new GoogleMap.InfoWindowAdapter() {
             @Override
@@ -259,7 +243,7 @@ public class MainActivity extends Activity implements OnMapReadyCallback, AsyncT
 
             optionsm = new MarkerOptions();
 
-            LatLng latLng = new LatLng(-23.544374, -46.643828);
+            LatLng latLng = new LatLng(penha.getLatitude(), penha.getLongitude());
 
             optionsm.position(latLng).title("Penha " + penha.getNumero())
                     .icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_penha))

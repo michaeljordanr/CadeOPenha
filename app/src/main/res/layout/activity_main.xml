@@ -63,7 +63,7 @@
             android:layout_marginRight="20dp"
             android:background="@drawable/radar"
             android:onClick="onRadar"
-            android:visibility="gone"/>
+           />
 
     <ProgressBar
         android:layout_width="match_parent"

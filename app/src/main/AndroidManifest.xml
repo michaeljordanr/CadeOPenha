@@ -49,6 +49,12 @@
             android:exported="false"
             android:enabled="false">
         </receiver>
+
+        <receiver android:name=".receiver.PenhaProximityReceiver" >
+            <intent-filter>
+                <action android:name="ACTION_PROXIMITY_ALERT" />
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>

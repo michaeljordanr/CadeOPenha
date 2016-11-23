@@ -1,33 +1,42 @@
-package br.com.jordan.cadeopenha.activity;
+package br.com.jordan.cadeopenha.receiver;
 
 import android.app.Activity;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.TaskStackBuilder;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.location.LocationManager;
 import android.os.Bundle;
+import android.widget.Toast;
 
 import br.com.jordan.cadeopenha.R;
+import br.com.jordan.cadeopenha.activity.MainActivity;
+import br.com.jordan.cadeopenha.activity.Splash;
 
 /**
  * Created by techresult on 10/11/2016.
  */
 
-public class NotificationActivity extends Activity {
-
-    private Context context;
-    private String texto;
+public class PenhaProximityReceiver extends BroadcastReceiver {
+    Context context;
+    Intent intent;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        context = getBaseContext();
+    public void onReceive(Context context, Intent intent) {
+        this.context = context;
+        this.intent = intent;
 
-        texto = getIntent().getStringExtra("text");
-        notify("Test", texto);
+        final String key = LocationManager.KEY_PROXIMITY_ENTERING;
+        final Boolean entering = intent.getBooleanExtra(key, false);
 
+        if (entering) {
+            notify("Penha", "se aproximando");
+        } else {
+            notify("Penha", "se afastando");
+        }
     }
 
     public void notify(String titulo, String texto){
@@ -73,4 +82,6 @@ public class NotificationActivity extends Activity {
         // Build Notification with Notification Manager
         notificationmanager.notify(0, notif);
     }
+
+
 }
